@@ -1,12 +1,8 @@
-Here’s a concise **README.md** draft based on your *MidTermProject.docx* instructions:
-
----
-
-# Midterm Project – Real-Time Embedded System (ESP32-S3 PlatformIO)
+# Midterm Project – Embedded Systems (ESP32-S3 PlatformIO)
 
 ## Overview
 
-This project is part of the Real-Time Systems course and focuses on developing a complete RTOS-based embedded application using the **ESP32-S3** with **PlatformIO**.
+This project is part of the Embedded Systems course and focuses on developing a complete RTOS-based embedded application using the **ESP32-S3** with **PlatformIO**.
 The goal is to extend and modify the existing *YoloUNO_PlatformIO RTOS project* by at least **30%** with new functionalities, demonstrating strong understanding of task management, synchronization, and embedded system design.
 
 ---
