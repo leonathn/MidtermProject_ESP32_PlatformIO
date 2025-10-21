@@ -3,7 +3,6 @@
 ## Overview
 
 This project is part of the Embedded Systems course and focuses on developing a complete RTOS-based embedded application using the **ESP32-S3** with **PlatformIO**.
-The goal is to extend and modify the existing *YoloUNO_PlatformIO RTOS project* by at least **30%** with new functionalities, demonstrating strong understanding of task management, synchronization, and embedded system design.
 
 ---
 
