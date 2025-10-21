@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 # Midterm Project – Embedded Systems (ESP32-S3 PlatformIO)
 
+=======
+# Midterm Project – Real-Time Embedded System (ESP32-S3 PlatformIO)
+>>>>>>> 650e63c (feat: Adding .cpp source code for each task in the assignment)
 ## Overview
 
 This project is part of the Embedded Systems course and focuses on developing a complete RTOS-based embedded application using the **ESP32-S3** with **PlatformIO**.
