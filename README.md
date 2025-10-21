@@ -1,47 +1,69 @@
-# Espressif 32: development platform for [PlatformIO](https://platformio.org)
+Here’s a concise **README.md** draft based on your *MidTermProject.docx* instructions:
 
-[![Build Status](https://github.com/platformio/platform-espressif32/workflows/Examples/badge.svg)](https://github.com/platformio/platform-espressif32/actions)
+---
 
-ESP32 is a series of low-cost, low-power system on a chip microcontrollers with integrated Wi-Fi and Bluetooth. ESP32 integrates an antenna switch, RF balun, power amplifier, low-noise receive amplifier, filters, and power management modules.
+# Midterm Project – Real-Time Embedded System (ESP32-S3 PlatformIO)
 
-* [Home](https://registry.platformio.org/platforms/platformio/espressif32) (home page in the PlatformIO Registry)
-* [Documentation](https://docs.platformio.org/page/platforms/espressif32.html) (advanced usage, packages, boards, frameworks, etc.)
+## Overview
 
-# Usage
+This project is part of the Real-Time Systems course and focuses on developing a complete RTOS-based embedded application using the **ESP32-S3** with **PlatformIO**.
+The goal is to extend and modify the existing *YoloUNO_PlatformIO RTOS project* by at least **30%** with new functionalities, demonstrating strong understanding of task management, synchronization, and embedded system design.
 
-1. [Install PlatformIO](https://platformio.org)
-2. Create PlatformIO project and configure a platform option in [platformio.ini](https://docs.platformio.org/page/projectconf.html) file:
+---
 
-## Stable version
+## Implemented Tasks
 
-See `platform` [documentation](https://docs.platformio.org/en/latest/projectconf/sections/env/options/platform/platform.html#projectconf-env-platform) for details.
+### 🟢 Task 1: LED Blink with Temperature Conditions
 
-```ini
-[env:stable]
-; recommended to pin to a version, see https://github.com/platformio/platform-espressif32/releases
-; platform = espressif32 @ ^6.0.1
-platform = espressif32
-board = yolo_uno
-framework = arduino
-monitor_speed = 115200
+* LED behavior changes dynamically with 3+ temperature ranges.
+* Uses **semaphores** for task synchronization.
 
-build_flags =
-    -D ARDUINO_USB_MODE=1
-    -D ARDUINO_USB_CDC_ON_BOOT=1
+### 🔵 Task 2: NeoPixel LED Control by Humidity
 
-## Development version
+* NeoPixel color patterns represent humidity levels (≥3 color zones).
+* Implements **semaphore-based** color update logic.
 
-```ini
-[env:development]
-platform = https://github.com/platformio/platform-espressif32.git
-board = yolo_uno
-framework = arduino
-monitor_speed = 115200
-build_flags =
-    -D ARDUINO_USB_MODE=1
-    -D ARDUINO_USB_CDC_ON_BOOT=1
+### 🟡 Task 3: LCD Temperature & Humidity Display
 
-    
-# Configuration
+* LCD shows real-time measurements with **three display states**: normal, warning, critical.
+* Semaphore logic controls data updates.
 
-Please navigate to [documentation](https://docs.platformio.org/page/platforms/espressif32.html).
+### 🔴 Task 4: Web Server (Access Point Mode)
+
+* Redesigned **AP Web UI** for user control and monitoring.
+* Two controllable devices (LEDs or actuators) with labeled buttons.
+
+### ⚙️ Task 5: TinyML Deployment & Accuracy Evaluation
+
+* TinyML model trained and quantized for ESP32-S3.
+* Includes dataset description, inference logic, and **on-device accuracy testing**.
+
+---
+
+## Project Structure
+
+```
+├── include/          # Header files
+├── src/              # Main RTOS source files
+├── lib/              # Libraries
+├── data/             # Web server HTML/CSS/JS
+├── test/             # Unit and hardware tests
+├── platformio.ini    # Build configuration
+└── README.md         # Project documentation
+```
+
+---
+
+## Deliverables
+
+* **PDF Report** – detailing design, implementation, results, and member contributions.
+* **GitHub Repository** – fully commented source code (this repository).
+
+## Team
+
+* **[Vo Phuc Thien]** – Head Engineer
+* **[Tran Hoai Nhan]** – Project Manager, Assistant Engineer
+
+
+---
+
