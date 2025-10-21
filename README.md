@@ -7,7 +7,7 @@ This project is part of the Embedded Systems course and focuses on developing a 
 
 ## Implemented Tasks
 
-* using "pio run -e task[number of task] -t upload" example: pio run -e task3 -t upload
+* using `pio run -e task[number_of_task] -t upload` example: `pio run -e task3 -t upload`
 
 ### 🟢 Task 1: LED Blink with Temperature Conditions
 
