@@ -413,3 +413,27 @@ void main_server_task(void *pvParameters)
     vTaskDelay(20); // avoid watchdog reset
   }
 }
+
+void setup()
+{
+  Serial.begin(115200);
+  while (!Serial)
+  {
+    vTaskDelay(10);
+  }
+
+  // Spin up the RTOS task that owns the Wi-Fi / web server logic.
+  xTaskCreatePinnedToCore(
+      main_server_task,
+      "APWebServer",
+      8192,
+      nullptr,
+      1,
+      nullptr,
+      tskNO_AFFINITY);
+}
+
+void loop()
+{
+  vTaskDelay(pdMS_TO_TICKS(1000));
+}
