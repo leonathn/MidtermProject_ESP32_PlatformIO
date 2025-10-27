@@ -13,6 +13,7 @@ static DHT20 dht;
 static void task_read_dht20(void* pv) {
   // I2C & sensor init (idempotent if already done elsewhere)
   Wire.begin(SDA_PIN, SCL_PIN);
+  Wire.setClock(100000);
   Wire.setTimeOut(50);
   dht.begin();
 
