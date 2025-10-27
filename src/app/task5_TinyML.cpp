@@ -73,3 +73,21 @@ void tiny_ml_task(void *pvParameters)
         vTaskDelay(5000);
     }
 }
+
+// cpp
+#include <Arduino.h>
+
+// forward-declare the task implemented in task5_TinyML.cpp
+void tiny_ml_task(void *pvParameters);
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial) { delay(10); }
+  // create the TinyML task (adjust stack size/prio as needed)
+  xTaskCreatePinnedToCore(tiny_ml_task, "TinyML", 8 * 1024, NULL, 1, NULL, 1);
+}
+
+void loop() {
+  // keep Arduino loop idle; FreeRTOS tasks run the work
+  vTaskDelay(portMAX_DELAY);
+}
