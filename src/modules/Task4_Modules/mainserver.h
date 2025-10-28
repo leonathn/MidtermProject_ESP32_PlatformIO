@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include "modules/Task4_Modules/global.h"
+#include "global.h"
 
 #define LED1_PIN 48
 #define LED2_PIN 41
