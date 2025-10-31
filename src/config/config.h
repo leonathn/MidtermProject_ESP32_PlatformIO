@@ -11,6 +11,12 @@
 static const int SDA_PIN = 11;
 static const int SCL_PIN = 12;
 
+/* ====== I2C Device Addresses ====== */
+#define LCD_I2C_ADDR 0x21
+#define LCD_COLS     16
+#define LCD_ROWS     2
+
+/* ====== NeoPixel Configuration ====== */
 #define NEOPIXEL_HUM_PIN 45
 #define NEOPIXEL_HUM_NUM 1
 

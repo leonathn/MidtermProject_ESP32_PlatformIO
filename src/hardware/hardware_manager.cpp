@@ -2,7 +2,7 @@
 
 /* ====== Hardware Object Definitions ====== */
 DHT20 dht;
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+LiquidCrystal_I2C lcd(LCD_I2C_ADDR, LCD_COLS, LCD_ROWS);
 Adafruit_NeoPixel stripHum(NEOPIXEL_HUM_NUM, NEOPIXEL_HUM_PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel stripUI(NEOPIXEL_UI_NUM, NEOPIXEL_UI_PIN, NEO_GRB + NEO_KHZ800);
 
