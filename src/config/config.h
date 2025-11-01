@@ -23,6 +23,11 @@ static const int SCL_PIN = 12;
 #define NEOPIXEL_UI_PIN 6
 #define NEOPIXEL_UI_NUM 4
 
+/* ====== Accessory Modules (Task 4) ====== */
+#define FAN_GPIO GPIO_NUM_7          // D3 control line
+#define LED_MODULE_PIN 5             // D5 data line (NeoPixel-style)
+#define LED_MODULE_COUNT 4
+
 #ifndef APP_CPU_NUM
   #define APP_CPU_NUM tskNO_AFFINITY
 #endif
@@ -47,12 +52,14 @@ static const int SCL_PIN = 12;
 #define TASK_NEO_UI_STACK_SIZE  3072
 #define TASK_LCD_STACK_SIZE     3072
 #define TASK_TINYML_STACK_SIZE  8192
+#define TASK_FANLED_STACK_SIZE  3072
 
 #define TASK_DHT_PRIORITY       3
 #define TASK_LED_PRIORITY       2
 #define TASK_NEO_PRIORITY       2
 #define TASK_LCD_PRIORITY       1
 #define TASK_TINYML_PRIORITY    1
+#define TASK_FANLED_PRIORITY    1
 
 /* ====== Timing ====== */
 #define DHT_READ_INTERVAL_MS    500
@@ -61,5 +68,6 @@ static const int SCL_PIN = 12;
 #define TINYML_WAIT_FOR_DATA_MS 500
 #define TINYML_RETRY_DELAY_MS   1000
 #define TINYML_INFERENCE_MS     5000
+#define FAN_LED_UPDATE_MS       200
 
 #endif // CONFIG_H

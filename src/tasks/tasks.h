@@ -46,7 +46,7 @@
  *          └--> (repeat)                └--> (repeat)            └--> (repeat)         └--> (repeat)
  * 
  * 
- * Task 4 (NeoPixel UI) runs independently with no semaphore synchronization.
+ * Task 4 accessories run independently with no semaphore synchronization.
  */
 
 /* ====== Task Function Declarations ====== */
@@ -87,7 +87,19 @@ void task_led(void* pv);
 void task_neopixel_hum(void* pv);
 
 /**
- * @brief Task 4: NeoPixel UI Bar (INDEPENDENT)
+ * @brief Task 4: Fan & LED Accessory Control (INDEPENDENT)
+ * @file task4_fan_led.cpp
+ * 
+ * Controls the D3 mini fan and D5 NeoPixel LED module.
+ * Fan supports OFF / ON / AUTO (based on temperature band).
+ * LED module supports OFF / RED / GREEN / BLUE / RAINBOW.
+ * 
+ * Semaphores: NONE (polls shared state directly).
+ */
+void task_fan_led(void* pv);
+
+/**
+ * @brief Task 4b: NeoPixel UI Bar (INDEPENDENT)
  * @file task2_led_neopixel.cpp
  * 
  * Controls 4-pixel NeoPixel strip (GPIO 6) for user interface
@@ -117,7 +129,8 @@ void task_lcd(void* pv);
  * - Task 1 (DHT20): Core 1, Priority 3, Stack 4096
  * - Task 2 (LED): Core 0, Priority 2, Stack 3072
  * - Task 3 (NeoPixel Hum): Core 0, Priority 2, Stack 3072
- * - Task 4 (NeoPixel UI): Core 0, Priority 1, Stack 3072
+ * - Task 4 (Fan & LED): Core 0, Priority 1, Stack 3072
+ * - Task 4b (NeoPixel UI): Core 0, Priority 1, Stack 3072
  * - Task 5 (LCD): Core 0, Priority 1, Stack 3072
  * - Task 6 (TinyML): Core 0, Priority 1, Stack 8192
  */

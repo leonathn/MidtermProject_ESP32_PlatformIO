@@ -15,6 +15,7 @@ extern DHT20 dht;
 extern LiquidCrystal_I2C lcd;
 extern Adafruit_NeoPixel stripHum;
 extern Adafruit_NeoPixel stripUI;
+extern Adafruit_NeoPixel stripAccessories;
 
 /* ====== Semaphores ====== */
 extern SemaphoreHandle_t semBandChanged;

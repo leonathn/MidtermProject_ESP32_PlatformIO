@@ -16,6 +16,7 @@
 extern void task_read_dht20(void* pv);
 extern void task_led(void* pv);
 extern void task_neopixel_hum(void* pv);
+extern void task_fan_led(void* pv);
 extern void task_neopixel_ui(void* pv);
 extern void task_lcd(void* pv);
 
@@ -50,6 +51,16 @@ void createAllTasks() {
         nullptr, 
         TASK_NEO_PRIORITY, 
         nullptr, 
+        APP_CPU_NUM
+    );
+    
+    xTaskCreatePinnedToCore(
+        task_fan_led,
+        "FAN_LED",
+        TASK_FANLED_STACK_SIZE,
+        nullptr,
+        TASK_FANLED_PRIORITY,
+        nullptr,
         APP_CPU_NUM
     );
     

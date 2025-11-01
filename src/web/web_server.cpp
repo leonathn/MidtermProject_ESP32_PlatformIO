@@ -55,6 +55,13 @@ static void handleState() {
     resp += ",\"tiny_score\":" + String(gLive.tinyml_score, 3);
     resp += ",\"tiny_last_ms\":" + String(gLive.tinyml_last_ms);
     resp += ",\"tiny_runs\":" + String(gLive.tinyml_runs);
+    resp += ",\"fanMode\":\"" + String(fanModeName(gLive.fanMode)) + "\"";
+    resp += ",\"fanActive\":" + String(gLive.fanActive ? 1 : 0);
+    resp += ",\"fan_last_ms\":" + String(gLive.fan_last_ms);
+    resp += ",\"fan_runs\":" + String(gLive.fan_runs);
+    resp += ",\"ledModuleMode\":\"" + String(ledModuleModeName(gLive.ledModuleMode)) + "\"";
+    resp += ",\"led_module_last_ms\":" + String(gLive.led_module_last_ms);
+    resp += ",\"led_module_runs\":" + String(gLive.led_module_runs);
     resp += ",\"uiMode\":" + String(gLive.uiMode);
     resp += ",\"wifiMode\":\"" + gWifiMode + "\"";
     resp += "}";
@@ -118,6 +125,48 @@ static void handleUiDemo() {
     server.send(200, "text/plain", "UI strip DEMO");
 }
 
+static FanMode fanModeFromString(const String& in) {
+    String mode = in;
+    mode.toLowerCase();
+    if (mode == "on") {
+        return FanMode::FAN_ON;
+    }
+    if (mode == "auto") {
+        return FanMode::FAN_AUTO;
+    }
+    return FanMode::FAN_OFF;
+}
+
+static LedModuleMode ledModeFromString(const String& in) {
+    String mode = in;
+    mode.toLowerCase();
+    if (mode == "red")     return LedModuleMode::LED_RED;
+    if (mode == "green")   return LedModuleMode::LED_GREEN;
+    if (mode == "blue")    return LedModuleMode::LED_BLUE;
+    if (mode == "rainbow") return LedModuleMode::LED_RAINBOW;
+    return LedModuleMode::LED_OFF;
+}
+
+static void handleFanControl() {
+    if (!server.hasArg("mode")) {
+        server.send(400, "text/plain", "Missing mode");
+        return;
+    }
+    gLive.fanMode = fanModeFromString(server.arg("mode"));
+    Serial.printf("[WEB][Task4] Fan mode set to %s\n", fanModeName(gLive.fanMode));
+    server.send(200, "text/plain", "Fan mode set to " + String(fanModeName(gLive.fanMode)));
+}
+
+static void handleLedControl() {
+    if (!server.hasArg("mode")) {
+        server.send(400, "text/plain", "Missing mode");
+        return;
+    }
+    gLive.ledModuleMode = ledModeFromString(server.arg("mode"));
+    Serial.printf("[WEB][Task4] LED module set to %s\n", ledModuleModeName(gLive.ledModuleMode));
+    server.send(200, "text/plain", "LED module set to " + String(ledModuleModeName(gLive.ledModuleMode)));
+}
+
 static void handleWifi() {
     String mode = server.hasArg("mode") ? server.arg("mode") : "ap";
     String ssid = server.hasArg("ssid") ? server.arg("ssid") : "";
@@ -173,6 +222,8 @@ void initWebServer() {
     server.on("/ui/off", handleUiOff);
     server.on("/ui/bar", handleUiBar);
     server.on("/ui/demo", handleUiDemo);
+    server.on("/task4/fan", handleFanControl);
+    server.on("/task4/led", handleLedControl);
     server.on("/wifi", handleWifi);
     
     server.begin();

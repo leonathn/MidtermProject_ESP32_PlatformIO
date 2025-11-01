@@ -19,6 +19,20 @@ enum class HumBand : uint8_t {
     WET 
 };
 
+enum class FanMode : uint8_t {
+    FAN_OFF = 0,
+    FAN_ON,
+    FAN_AUTO
+};
+
+enum class LedModuleMode : uint8_t {
+    LED_OFF = 0,
+    LED_RED,
+    LED_GREEN,
+    LED_BLUE,
+    LED_RAINBOW
+};
+
 /* ====== Global State Structure ====== */
 struct LiveState {
     float tC = NAN;
@@ -47,6 +61,15 @@ struct LiveState {
     float tinyml_score = NAN;
     uint32_t tinyml_last_ms = 0;
     uint32_t tinyml_runs = 0;
+
+    // Task 4 accessory states
+    FanMode fanMode = FanMode::FAN_OFF;
+    uint8_t fanActive = 0;
+    LedModuleMode ledModuleMode = LedModuleMode::LED_OFF;
+    uint32_t fan_last_ms = 0;
+    uint32_t fan_runs = 0;
+    uint32_t led_module_last_ms = 0;
+    uint32_t led_module_runs = 0;
 };
 
 /* ====== Global Variables ====== */
@@ -69,6 +92,8 @@ extern float H_HUMID_MAX;
 /* ====== Helper Functions ====== */
 const char* bandName(TempBand b);
 const char* humName(HumBand b);
+const char* fanModeName(FanMode m);
+const char* ledModuleModeName(LedModuleMode m);
 TempBand classifyTemp(float tC);
 HumBand classifyHum(float h);
 void bandToBlink(TempBand b, uint32_t& onMs, uint32_t& offMs);

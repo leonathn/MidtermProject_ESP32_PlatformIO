@@ -36,6 +36,26 @@ const char* humName(HumBand b) {
     return "?";
 }
 
+const char* fanModeName(FanMode m) {
+    switch (m) {
+        case FanMode::FAN_OFF:  return "OFF";
+        case FanMode::FAN_ON:   return "ON";
+        case FanMode::FAN_AUTO: return "AUTO";
+    }
+    return "?";
+}
+
+const char* ledModuleModeName(LedModuleMode m) {
+    switch (m) {
+        case LedModuleMode::LED_OFF:     return "OFF";
+        case LedModuleMode::LED_RED:     return "RED";
+        case LedModuleMode::LED_GREEN:   return "GREEN";
+        case LedModuleMode::LED_BLUE:    return "BLUE";
+        case LedModuleMode::LED_RAINBOW: return "RAINBOW";
+    }
+    return "?";
+}
+
 TempBand classifyTemp(float tC) {
     if (tC < T_COLD_MAX)   return TempBand::COLD;
     if (tC < T_NORMAL_MAX) return TempBand::NORMAL;

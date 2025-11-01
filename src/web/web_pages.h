@@ -37,6 +37,7 @@ h1{margin:0 0 16px}
 input, select{width:100%;padding:6px 8px;border-radius:8px;border:1px solid #222;background:#0e1015;color:#fff;margin-bottom:6px}
 button{background:#1dd17c;color:#000;border:none;border-radius:10px;padding:7px 16px;font-weight:600;cursor:pointer}
 .btn-ghost{background:transparent;border:1px solid #1dd17c;color:#1dd17c}
+.btn-active{background:#1dd17c !important;color:#000 !important;border-color:#1dd17c !important}
 .small{font-size:11px;color:var(--muted);margin-top:8px}
 @media (max-width:960px){.grid{grid-template-columns:1fr}}
 </style>
@@ -109,6 +110,27 @@ button{background:#1dd17c;color:#000;border:none;border-radius:10px;padding:7px 
     </div>
 
     <div class="card">
+      <div class="section-title">TASK 4 — FAN (D3) &amp; LED MODULE (D5)</div>
+      <p class="small">Mini fan supports OFF / ON / AUTO (AUTO engages when the temperature band is HOT or CRITICAL).</p>
+      <div class="flex">
+        <button id="btnFanOff" class="btn-ghost">Fan OFF</button>
+        <button id="btnFanOn" class="btn-ghost">Fan ON</button>
+        <button id="btnFanAuto" class="btn-ghost">Fan AUTO</button>
+      </div>
+      <p class="small">Fan status: <span id="fanStatus">-</span></p>
+
+      <p class="small" style="margin-top:12px">LED module supports color presets and rainbow animation.</p>
+      <div class="flex">
+        <button id="btnLedOff" class="btn-ghost">LED OFF</button>
+        <button id="btnLedRed" class="btn-ghost">Red</button>
+        <button id="btnLedGreen" class="btn-ghost">Green</button>
+        <button id="btnLedBlue" class="btn-ghost">Blue</button>
+        <button id="btnLedRainbow" class="btn-ghost">Rainbow</button>
+      </div>
+      <p class="small">LED status: <span id="ledStatus">-</span></p>
+    </div>
+
+    <div class="card">
       <div class="section-title">Wi-Fi Config</div>
       <label>Mode</label>
       <select id="wifiMode">
@@ -132,6 +154,21 @@ fields.forEach(id => {
   el.addEventListener("focus", () => { isEditing[id] = true; });
   el.addEventListener("blur",  () => { isEditing[id] = false; });
 });
+
+const fanButtonMap = { OFF: "btnFanOff", ON: "btnFanOn", AUTO: "btnFanAuto" };
+const ledButtonMap = { OFF: "btnLedOff", RED: "btnLedRed", GREEN: "btnLedGreen", BLUE: "btnLedBlue", RAINBOW: "btnLedRainbow" };
+
+function setActiveButton(map, activeKey) {
+  Object.entries(map).forEach(([key, id]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    if (key === activeKey) {
+      btn.classList.add('btn-active');
+    } else {
+      btn.classList.remove('btn-active');
+    }
+  });
+}
 
 async function poll(){
   try{
@@ -202,6 +239,21 @@ async function poll(){
       }
     }
 
+    const fanMode = j.fanMode || 'OFF';
+    const fanStatus = document.getElementById('fanStatus');
+    if (fanStatus) {
+      const active = j.fanActive ? ' (running)' : ' (idle)';
+      fanStatus.textContent = fanMode + active;
+      setActiveButton(fanButtonMap, fanMode);
+    }
+
+    const ledMode = j.ledModuleMode || 'OFF';
+    const ledStatus = document.getElementById('ledStatus');
+    if (ledStatus) {
+      ledStatus.textContent = ledMode;
+      setActiveButton(ledButtonMap, ledMode);
+    }
+
   }catch(e){
     // ignore
   }
@@ -247,6 +299,34 @@ document.getElementById('btnUiBar').addEventListener('click', async ()=>{
 document.getElementById('btnUiDemo').addEventListener('click', async ()=>{
   const r = await fetch('/ui/demo'); document.getElementById('saveMsg').textContent = await r.text();
 });
+
+async function setFanMode(mode){
+  try {
+    await fetch(`/task4/fan?mode=${mode}`);
+  } catch (err) {
+    console.error('Fan mode request failed', err);
+  }
+  poll();
+}
+
+async function setLedMode(mode){
+  try {
+    await fetch(`/task4/led?mode=${mode}`);
+  } catch (err) {
+    console.error('LED mode request failed', err);
+  }
+  poll();
+}
+
+document.getElementById('btnFanOff').addEventListener('click', ()=> setFanMode('off'));
+document.getElementById('btnFanOn').addEventListener('click', ()=> setFanMode('on'));
+document.getElementById('btnFanAuto').addEventListener('click', ()=> setFanMode('auto'));
+
+document.getElementById('btnLedOff').addEventListener('click', ()=> setLedMode('off'));
+document.getElementById('btnLedRed').addEventListener('click', ()=> setLedMode('red'));
+document.getElementById('btnLedGreen').addEventListener('click', ()=> setLedMode('green'));
+document.getElementById('btnLedBlue').addEventListener('click', ()=> setLedMode('blue'));
+document.getElementById('btnLedRainbow').addEventListener('click', ()=> setLedMode('rainbow'));
 
 // wifi config
 document.getElementById('btnWifi').addEventListener('click', async ()=>{
