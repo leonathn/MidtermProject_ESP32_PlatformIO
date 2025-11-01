@@ -52,6 +52,9 @@ static void handleState() {
     resp += ",\"led_runs\":" + String(gLive.led_runs);
     resp += ",\"neo_runs\":" + String(gLive.neo_runs);
     resp += ",\"lcd_runs\":" + String(gLive.lcd_runs);
+    resp += ",\"tiny_score\":" + String(gLive.tinyml_score, 3);
+    resp += ",\"tiny_last_ms\":" + String(gLive.tinyml_last_ms);
+    resp += ",\"tiny_runs\":" + String(gLive.tinyml_runs);
     resp += ",\"uiMode\":" + String(gLive.uiMode);
     resp += ",\"wifiMode\":\"" + gWifiMode + "\"";
     resp += "}";

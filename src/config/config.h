@@ -46,15 +46,20 @@ static const int SCL_PIN = 12;
 #define TASK_NEO_HUM_STACK_SIZE 3072
 #define TASK_NEO_UI_STACK_SIZE  3072
 #define TASK_LCD_STACK_SIZE     3072
+#define TASK_TINYML_STACK_SIZE  8192
 
 #define TASK_DHT_PRIORITY       3
 #define TASK_LED_PRIORITY       2
 #define TASK_NEO_PRIORITY       2
 #define TASK_LCD_PRIORITY       1
+#define TASK_TINYML_PRIORITY    1
 
 /* ====== Timing ====== */
 #define DHT_READ_INTERVAL_MS    500
 #define UI_STRIP_UPDATE_MS      120
 #define WEB_POLL_INTERVAL_MS    500
+#define TINYML_WAIT_FOR_DATA_MS 500
+#define TINYML_RETRY_DELAY_MS   1000
+#define TINYML_INFERENCE_MS     5000
 
 #endif // CONFIG_H

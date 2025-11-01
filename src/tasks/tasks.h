@@ -119,6 +119,7 @@ void task_lcd(void* pv);
  * - Task 3 (NeoPixel Hum): Core 0, Priority 2, Stack 3072
  * - Task 4 (NeoPixel UI): Core 0, Priority 1, Stack 3072
  * - Task 5 (LCD): Core 0, Priority 1, Stack 3072
+ * - Task 6 (TinyML): Core 0, Priority 1, Stack 8192
  */
 void createAllTasks();
 

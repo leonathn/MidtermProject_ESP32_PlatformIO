@@ -27,6 +27,12 @@ h1{margin:0 0 16px}
 .band.NORMAL{color:var(--ok)}
 .band.HOT{color:var(--warn)}
 .band.CRITICAL{color:var(--hot)}
+.gauge-wrap{background:#0e121b;border:1px solid #141824;border-radius:18px;height:36px;position:relative;overflow:hidden;margin:12px 0}
+.gauge-fill{height:100%;background:linear-gradient(90deg,#1dd17c 0%,#ffb020 55%,#ff5d5d 100%);width:0%;transition:width .3s ease-out}
+.gauge-label{position:absolute;top:8px;left:12px;font-size:14px;font-weight:600}
+.status-normal{color:var(--ok);font-weight:600}
+.status-unusual{color:var(--hot);font-weight:600}
+.status-wait{color:var(--muted);font-weight:600}
 .flex{display:flex;gap:10px;flex-wrap:wrap}
 input, select{width:100%;padding:6px 8px;border-radius:8px;border:1px solid #222;background:#0e1015;color:#fff;margin-bottom:6px}
 button{background:#1dd17c;color:#000;border:none;border-radius:10px;padding:7px 16px;font-weight:600;cursor:pointer}
@@ -59,6 +65,19 @@ button{background:#1dd17c;color:#000;border:none;border-radius:10px;padding:7px 
         <tr><td>LED</td><td id="ledv" style="text-align:right">-</td></tr>
         <tr><td>LED Blink</td><td id="blinkv" style="text-align:right">-</td></tr>
       </table>
+    </div>
+    <div class="card">
+      <div class="section-title">TASK 5 — TinyML Anomaly Score</div>
+      <div class="gauge-wrap">
+        <div id="tinyGauge" class="gauge-fill"></div>
+        <div id="tinyGaugeLabel" class="gauge-label">-</div>
+      </div>
+      <p class="small">Inference score updates when the TinyML task acquires <code>gLive</code> sensor data &amp; runs inference. 0 = normal, 1 = unusual.</p>
+      <div class="flex">
+        <span class="badge">Status: <span id="tinyStatus" class="status-wait">Waiting...</span></span>
+        <span class="badge">Runs: <span id="tinyRuns">0</span></span>
+        <span class="badge">Last: <span id="tinyAgo">-</span></span>
+      </div>
     </div>
   </div>
 
@@ -149,6 +168,38 @@ async function poll(){
     const wm = document.getElementById('wifiMode');
     if (wm && (j.wifiMode === "ap" || j.wifiMode === "sta")) {
       wm.value = j.wifiMode;
+    }
+
+    const gauge = document.getElementById('tinyGauge');
+    if (gauge) {
+      const score = j.tiny_score;
+      const gaugeLabel = document.getElementById('tinyGaugeLabel');
+      const statusEl = document.getElementById('tinyStatus');
+      const runsEl = document.getElementById('tinyRuns');
+      const agoEl = document.getElementById('tinyAgo');
+
+      const valid = typeof score === 'number' && !isNaN(score);
+      if (valid) {
+        const pct = Math.min(100, Math.max(0, score * 100));
+        gauge.style.width = pct + '%';
+        gaugeLabel.textContent = score.toFixed(3);
+        const status = score >= 0.6 ? 'Unusual' : 'Normal';
+        statusEl.textContent = status;
+        statusEl.className = status === 'Unusual' ? 'status-unusual' : 'status-normal';
+      } else {
+        gauge.style.width = '0%';
+        gaugeLabel.textContent = '-';
+        statusEl.textContent = 'Waiting...';
+        statusEl.className = 'status-wait';
+      }
+
+      runsEl.textContent = (typeof j.tiny_runs === 'number') ? j.tiny_runs : 0;
+      if (j.tiny_last_ms && j.tiny_last_ms > 0) {
+        const delta = Math.max(0, (j.ms - j.tiny_last_ms) / 1000);
+        agoEl.textContent = delta.toFixed(1) + 's ago';
+      } else {
+        agoEl.textContent = '-';
+      }
     }
 
   }catch(e){

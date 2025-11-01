@@ -42,6 +42,11 @@ struct LiveState {
     uint32_t led_runs = 0;
     uint32_t neo_runs = 0;
     uint32_t lcd_runs = 0;
+
+    // TinyML inference telemetry
+    float tinyml_score = NAN;
+    uint32_t tinyml_last_ms = 0;
+    uint32_t tinyml_runs = 0;
 };
 
 /* ====== Global Variables ====== */

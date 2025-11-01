@@ -10,6 +10,7 @@
 
 #include "tasks.h"
 #include "../config/config.h"
+#include "../ml/tinyml.h"
 
 // Task function prototypes (implemented in separate files)
 extern void task_read_dht20(void* pv);
@@ -71,6 +72,8 @@ void createAllTasks() {
         nullptr, 
         APP_CPU_NUM
     );
+
+    createTinyMLTask();
     
     Serial.println("[TASKS] All tasks created successfully");
 }
