@@ -145,6 +145,66 @@ static void handleWifi() {
     }
 }
 
+static void handleHealth() {
+    String resp = "{";
+    resp += "\"freeHeap\":" + String(gHealth.freeHeap);
+    resp += ",\"minFreeHeap\":" + String(gHealth.minFreeHeap);
+    resp += ",\"wifiRSSI\":" + String(gHealth.wifiRSSI);
+    resp += ",\"uptime\":" + String(gHealth.uptime);
+    resp += ",\"heapPercent\":" + String((gHealth.freeHeap * 100) / (gHealth.freeHeap + 1000));  // Rough estimate
+    resp += "}";
+    server.send(200, "application/json", resp);
+}
+
+static void handleHistory() {
+    String resp = "{\"temp\":[";
+    
+    uint8_t count = gHistory.filled ? HISTORY_SIZE : gHistory.index;
+    uint8_t start = gHistory.filled ? gHistory.index : 0;
+    
+    for (uint8_t i = 0; i < count; i++) {
+        uint8_t idx = (start + i) % HISTORY_SIZE;
+        if (i > 0) resp += ",";
+        resp += String(gHistory.temp[idx], 2);
+    }
+    
+    resp += "],\"hum\":[";
+    
+    for (uint8_t i = 0; i < count; i++) {
+        uint8_t idx = (start + i) % HISTORY_SIZE;
+        if (i > 0) resp += ",";
+        resp += String(gHistory.hum[idx], 2);
+    }
+    
+    resp += "],\"time\":[";
+    
+    for (uint8_t i = 0; i < count; i++) {
+        uint8_t idx = (start + i) % HISTORY_SIZE;
+        if (i > 0) resp += ",";
+        resp += String(gHistory.timestamps[idx]);
+    }
+    
+    resp += "]}";
+    server.send(200, "application/json", resp);
+}
+
+static void handleAlerts() {
+    String resp = "{";
+    resp += "\"enabled\":" + String(gAlerts.enabled ? "true" : "false");
+    resp += ",\"tempCritical\":" + String(gAlerts.tempCritical ? "true" : "false");
+    resp += ",\"humCritical\":" + String(gAlerts.humCritical ? "true" : "false");
+    resp += ",\"anomalyDetected\":" + String(gAlerts.anomalyDetected ? "true" : "false");
+    resp += ",\"lastAlertTime\":" + String(gAlerts.lastAlertTime);
+    resp += ",\"alertCount\":" + String(gAlerts.alertCount);
+    resp += "}";
+    server.send(200, "application/json", resp);
+}
+
+static void handleAlertToggle() {
+    gAlerts.enabled = !gAlerts.enabled;
+    server.send(200, "text/plain", gAlerts.enabled ? "Alerts enabled" : "Alerts disabled");
+}
+
 /* ====== Public Functions ====== */
 
 void initWiFi() {
@@ -174,6 +234,10 @@ void initWebServer() {
     server.on("/ui/bar", handleUiBar);
     server.on("/ui/demo", handleUiDemo);
     server.on("/wifi", handleWifi);
+    server.on("/health", handleHealth);
+    server.on("/history", handleHistory);
+    server.on("/alerts", handleAlerts);
+    server.on("/alerts/toggle", handleAlertToggle);
     
     server.begin();
     

@@ -33,6 +33,7 @@ void task_read_dht20(void* pv) {
 
     TempBand lastT = TempBand::NORMAL;
     HumBand  lastH = HumBand::COMFORT;
+    bool firstReading = true;  // Flag for first reading
 
     Serial.println("[TASK1] DHT20 sensor task started");
     Serial.println("[TASK1] Will signal:");
@@ -56,28 +57,49 @@ void task_read_dht20(void* pv) {
         TempBand nowT = classifyTemp(t);
         HumBand  nowH = classifyHum(h);
 
-        // SEMAPHORE SIGNALING: Temperature band change
-        if (nowT != lastT) {
+        // SEMAPHORE SIGNALING: Temperature band change (or first reading)
+        if (nowT != lastT || firstReading) {
             gLive.tBand = nowT;
             xSemaphoreGive(semBandChanged);  // ← Signal Task 2 (LED)
             gLive.giveTemp++;
             lastT = nowT;
-            Serial.printf("[TASK1] ✓ Temp band changed: %s (%.1f°C) → semBandChanged given\n", 
-                          bandName(nowT), t);
+            if (firstReading) {
+                Serial.printf("[TASK1] ✓ First reading: Temp=%s (%.1f°C) → semBandChanged given\n", 
+                              bandName(nowT), t);
+            } else {
+                Serial.printf("[TASK1] ✓ Temp band changed: %s (%.1f°C) → semBandChanged given\n", 
+                              bandName(nowT), t);
+            }
         }
 
-        // SEMAPHORE SIGNALING: Humidity band change
-        if (nowH != lastH) {
+        // SEMAPHORE SIGNALING: Humidity band change (or first reading)
+        if (nowH != lastH || firstReading) {
             gLive.hBand = nowH;
             xSemaphoreGive(semHumChanged);  // ← Signal Task 3 (NeoPixel)
             gLive.giveHum++;
             lastH = nowH;
-            Serial.printf("[TASK1] ✓ Hum band changed: %s (%.1f%%) → semHumChanged given\n", 
-                          humName(nowH), h);
+            if (firstReading) {
+                Serial.printf("[TASK1] ✓ First reading: Hum=%s (%.1f%%) → semHumChanged given\n", 
+                              humName(nowH), h);
+            } else {
+                Serial.printf("[TASK1] ✓ Hum band changed: %s (%.1f%%) → semHumChanged given\n", 
+                              humName(nowH), h);
+            }
         }
 
         // SEMAPHORE SIGNALING: Always update LCD
         xSemaphoreGive(semLcdUpdate);  // ← Signal Task 5 (LCD)
+
+        // Add to historical data buffer
+        addHistoryPoint(t, h);
+        
+        // Update system health metrics
+        updateSystemHealth();
+        
+        // Check for alert conditions
+        checkAlerts();
+
+        firstReading = false;  // Clear flag after first reading
 
         // Wait 500ms before next reading
         vTaskDelay(pdMS_TO_TICKS(DHT_READ_INTERVAL_MS));
