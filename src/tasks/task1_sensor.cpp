@@ -90,15 +90,6 @@ void task_read_dht20(void* pv) {
         // SEMAPHORE SIGNALING: Always update LCD
         xSemaphoreGive(semLcdUpdate);  // ← Signal Task 5 (LCD)
 
-        // Add to historical data buffer
-        addHistoryPoint(t, h);
-        
-        // Update system health metrics
-        updateSystemHealth();
-        
-        // Check for alert conditions
-        checkAlerts();
-
         firstReading = false;  // Clear flag after first reading
 
         // Wait 500ms before next reading

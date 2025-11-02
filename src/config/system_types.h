@@ -19,38 +19,6 @@ enum class HumBand : uint8_t {
     WET 
 };
 
-/* ====== Historical Data Buffer ====== */
-#define HISTORY_SIZE 50  // Keep last 50 readings (25 seconds at 500ms rate)
-
-struct HistoryBuffer {
-    float temp[HISTORY_SIZE];
-    float hum[HISTORY_SIZE];
-    uint32_t timestamps[HISTORY_SIZE];
-    uint8_t index = 0;
-    bool filled = false;
-};
-
-/* ====== System Health Structure ====== */
-struct SystemHealth {
-    uint32_t freeHeap = 0;
-    uint32_t minFreeHeap = 0;
-    uint8_t cpuCore0 = 0;  // CPU usage percentage (0-100)
-    uint8_t cpuCore1 = 0;
-    int8_t wifiRSSI = 0;   // WiFi signal strength (dBm)
-    uint32_t uptime = 0;
-    uint8_t resetReason = 0;
-};
-
-/* ====== Alert Configuration ====== */
-struct AlertConfig {
-    bool enabled = true;
-    bool tempCritical = false;  // Alert triggered flags
-    bool humCritical = false;
-    bool anomalyDetected = false;
-    uint32_t lastAlertTime = 0;
-    uint32_t alertCount = 0;
-};
-
 /* ====== Global State Structure ====== */
 struct LiveState {
     float tC = NAN;
@@ -83,9 +51,6 @@ struct LiveState {
 
 /* ====== Global Variables ====== */
 extern volatile LiveState gLive;
-extern HistoryBuffer gHistory;
-extern SystemHealth gHealth;
-extern AlertConfig gAlerts;
 
 // WiFi configuration
 extern String gWifiMode;
@@ -107,10 +72,5 @@ const char* humName(HumBand b);
 TempBand classifyTemp(float tC);
 HumBand classifyHum(float h);
 void bandToBlink(TempBand b, uint32_t& onMs, uint32_t& offMs);
-
-// Historical data management
-void addHistoryPoint(float temp, float hum);
-void updateSystemHealth();
-void checkAlerts();
 
 #endif // SYSTEM_TYPES_H

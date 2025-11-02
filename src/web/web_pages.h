@@ -10,261 +10,427 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>ESP32-S3 Env Dashboard</title>
+<title>ESP32-S3 RTOS Lab</title>
 <style>
-:root { --bg:#0b0d12; --card:#121621; --border:#1b1f2a; --fg:#eef; --muted:#a9b2c2; --ok:#1dd17c; --warn:#ffb020; --hot:#ff5d5d; --blue:#54c8ff; }
-body{background:var(--bg);color:var(--fg);font-family:system-ui,Segoe UI,Roboto;margin:0;padding:16px}
-h1{margin:0 0 16px}
-.grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:16px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px}
-.badge{display:inline-flex;gap:6px;align-items:center;background:#0e121b;border:1px solid rgba(255,255,255,.05);border-radius:999px;padding:4px 10px;font-size:12px}
-.section-title{font-size:13px;color:var(--muted);text-transform:uppercase;margin:16px 0 6px}
-.hbar-wrap{background:#0e121b;border:1px solid #141824;border-radius:14px;height:28px;position:relative;overflow:hidden}
-.hbar{height:100%;background:linear-gradient(90deg,#54c8ff 0%,#1dd17c 40%,#ffb020 70%,#ff5d5d 100%);width:0%;transition:width .25s ease-out}
-.hbar-label{position:absolute;top:3px;left:8px;font-size:12px}
-.band{font-weight:700}
-.band.COLD{color:var(--blue)}
-.band.NORMAL{color:var(--ok)}
-.band.HOT{color:var(--warn)}
-.band.CRITICAL{color:var(--hot)}
-.gauge-wrap{background:#0e121b;border:1px solid #141824;border-radius:18px;height:36px;position:relative;overflow:hidden;margin:12px 0}
-.gauge-fill{height:100%;background:linear-gradient(90deg,#1dd17c 0%,#ffb020 55%,#ff5d5d 100%);width:0%;transition:width .3s ease-out}
-.gauge-label{position:absolute;top:8px;left:12px;font-size:14px;font-weight:600}
-.status-normal{color:var(--ok);font-weight:600}
-.status-unusual{color:var(--hot);font-weight:600}
-.status-wait{color:var(--muted);font-weight:600}
-.flex{display:flex;gap:10px;flex-wrap:wrap}
-input, select{width:100%;padding:6px 8px;border-radius:8px;border:1px solid #222;background:#0e1015;color:#fff;margin-bottom:6px}
-button{background:#1dd17c;color:#000;border:none;border-radius:10px;padding:7px 16px;font-weight:600;cursor:pointer}
-.btn-ghost{background:transparent;border:1px solid #1dd17c;color:#1dd17c}
-.small{font-size:11px;color:var(--muted);margin-top:8px}
-@keyframes pulse{0%,100%{border-color:var(--hot);box-shadow:0 0 0 rgba(255,93,93,0)}50%{border-color:var(--hot);box-shadow:0 0 20px rgba(255,93,93,0.5)}}
-@media (max-width:960px){.grid{grid-template-columns:1fr}}
+* { margin:0; padding:0; box-sizing:border-box; }
+:root { 
+  --bg:#0f172a; 
+  --card:#1e293b; 
+  --card-dark:#0f1729;
+  --border:#1e3a5f; 
+  --fg:#f1f5f9; 
+  --muted:#94a3b8; 
+  --cyan:#06b6d4;
+  --green:#10b981;
+  --red:#ef4444;
+  --yellow:#f59e0b;
+}
+body { background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+
+/* Header */
+.header { 
+  background:rgba(15,23,41,0.95); 
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border); 
+  padding:12px 20px;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+.header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.header-title { display:flex; align-items:center; gap:10px; font-size:22px; font-weight:700; color:var(--cyan); }
+.chip-icon { font-size:24px; }
+.status-badges { display:flex; gap:6px; flex-wrap:wrap; }
+.badge { 
+  display:inline-flex; 
+  align-items:center; 
+  gap:4px; 
+  padding:6px 12px; 
+  border-radius:999px; 
+  font-size:12px; 
+  font-weight:600;
+  border:2px solid;
+}
+.badge-success { background:rgba(16,185,129,0.15); border-color:var(--green); color:var(--green); }
+.badge-warning { background:rgba(239,68,68,0.15); border-color:var(--red); color:var(--red); }
+.header-info { display:flex; gap:12px; font-size:12px; color:var(--muted); align-items:center; flex-wrap:wrap; }
+
+/* Tabs */
+.tabs { display:flex; gap:6px; margin-bottom:16px; }
+.tab { 
+  background:transparent; 
+  border:none; 
+  color:var(--muted); 
+  padding:10px 24px; 
+  border-radius:10px; 
+  font-size:14px; 
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.tab:hover { background:rgba(6,182,212,0.1); color:var(--cyan); }
+.tab.active { background:var(--card-dark); color:var(--cyan); }
+
+/* Main Content */
+.container { max-width:1400px; margin:0 auto; padding:16px; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* Cards */
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px; }
+.card-title { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:600; margin-bottom:16px; color:var(--fg); }
+
+/* Live Sensors */
+.sensor-grid { display:grid; gap:16px; }
+.sensor-block { margin-bottom:0; }
+.sensor-value { font-size:48px; font-weight:700; display:flex; align-items:baseline; gap:8px; margin:8px 0; }
+.sensor-icon { font-size:32px; }
+.sensor-unit { font-size:24px; color:var(--muted); }
+.sensor-band { font-size:14px; color:var(--muted); margin-bottom:8px; }
+.sensor-band span { font-weight:700; }
+.progress-bar { 
+  background:var(--card-dark); 
+  height:12px; 
+  border-radius:999px; 
+  overflow:hidden;
+  position:relative;
+}
+.progress-fill { 
+  height:100%; 
+  background:linear-gradient(90deg, var(--cyan), var(--green)); 
+  border-radius:999px; 
+  transition:width 0.3s;
+}
+
+/* Config */
+.config-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.config-section { }
+.config-section h3 { font-size:16px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+label { display:block; font-size:11px; color:var(--muted); margin-top:10px; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.5px; }
+input, select { 
+  width:100%; 
+  padding:10px 12px; 
+  background:var(--card-dark); 
+  border:1px solid var(--border); 
+  border-radius:10px; 
+  color:var(--fg); 
+  font-size:14px;
+}
+input:focus, select:focus { outline:none; border-color:var(--cyan); }
+.hint { font-size:11px; color:var(--muted); font-style:italic; margin-top:6px; }
+button { 
+  background:var(--cyan); 
+  color:#0f172a; 
+  border:none; 
+  padding:10px 20px; 
+  border-radius:10px; 
+  font-weight:700; 
+  font-size:14px;
+  cursor:pointer;
+  transition:all 0.2s;
+  margin-top:12px;
+}
+button:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(6,182,212,0.4); }
+.btn-group { display:flex; gap:10px; margin-top:12px; }
+.btn-outline { background:transparent; border:2px solid var(--cyan); color:var(--cyan); padding:8px 16px; }
+.btn-outline.active { background:var(--cyan); color:#0f172a; }
+
+/* Controls */
+.control-section { margin-bottom:20px; }
+.led-preview { display:flex; gap:12px; margin-top:12px; align-items:center; }
+.led { width:32px; height:32px; border-radius:50%; background:var(--card-dark); border:2px solid var(--border); }
+
+/* Task Monitor */
+.task-list { display:grid; gap:8px; }
+.task-item { 
+  background:var(--card-dark); 
+  padding:12px; 
+  border-radius:10px; 
+  display:flex; 
+  justify-content:space-between; 
+  align-items:center;
+}
+.task-info h4 { font-size:14px; font-weight:600; margin-bottom:3px; }
+.task-info .small { font-size:11px; color:var(--muted); }
+.task-status { text-align:right; }
+.status-badge { 
+  display:inline-block; 
+  padding:4px 10px; 
+  border-radius:6px; 
+  font-size:10px; 
+  font-weight:600;
+  text-transform:uppercase;
+}
+.status-running { background:var(--green); color:#0f172a; }
+.status-waiting { background:var(--yellow); color:#0f172a; }
+
+.small { font-size:11px; color:var(--muted); }
+@media (max-width:960px) { 
+  .config-grid { grid-template-columns:1fr; }
+  .header-top { flex-direction:column; align-items:flex-start; gap:8px; }
+  .sensor-value { font-size:36px; }
+  .sensor-icon { font-size:28px; }
+  .sensor-unit { font-size:20px; }
+}
+@media (max-width:640px) {
+  .card { padding:16px; }
+  .container { padding:12px; }
+  .header { padding:10px 12px; }
+  .sensor-value { font-size:32px; }
+}
 </style>
 </head>
 <body>
-<h1>ESP32-S3 Env Dashboard</h1>
-<div class="grid">
-  <!-- LEFT: live -->
-  <div>
-    <div class="card">
-      <div class="flex">
-        <span class="badge">Uptime: <span id="uptime">0.0s</span></span>
-        <span class="badge">Temp: <span id="tband" class="band">-</span></span>
-        <span class="badge">Hum: <span id="hband" class="band">-</span></span>
-        <span class="badge">UI strip: <span id="uimode">OFF</span></span>
-      </div>
-      <h3 style="margin-top:14px">Humidity</h3>
-      <div class="hbar-wrap">
-        <div id="hbar" class="hbar"></div>
-        <div id="hbar-label" class="hbar-label">- %</div>
-      </div>
-      <p class="small">GPIO 45 = auto humidity pixel. GPIO 6 = 4-px user bar.</p>
-      <table style="width:100%;margin-top:10px">
-        <tr><td>Temperature</td><td id="tempv" style="text-align:right">-</td></tr>
-        <tr><td>Humidity</td><td id="humv" style="text-align:right">-</td></tr>
-        <tr><td>LED</td><td id="ledv" style="text-align:right">-</td></tr>
-        <tr><td>LED Blink</td><td id="blinkv" style="text-align:right">-</td></tr>
-      </table>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">
+      <span class="chip-icon">💠</span>
+      ESP32-S3 RTOS Lab
     </div>
-    
-    <!-- Task Semaphore Visualization -->
-    <div class="card">
-      <div class="section-title">⚙️ TASK SEMAPHORE MONITOR</div>
-      <div style="margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#0e121b;border-radius:6px;margin-bottom:6px">
-          <div>
-            <strong>Task 1: DHT20 Sensor</strong>
-            <div class="small" style="margin-top:2px">Producer (Core 1, P:3)</div>
-          </div>
-          <div style="text-align:right">
-            <span id="task1status" class="badge" style="background:#28a745">RUNNING</span>
-            <div class="small" style="margin-top:2px">Runs: <span id="task1runs">0</span></div>
-          </div>
-        </div>
-        
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#0e121b;border-radius:6px;margin-bottom:6px">
-          <div>
-            <strong>Task 2: LED Control</strong>
-            <div class="small" style="margin-top:2px">Consumer (Core 0, P:2) ← semBandChanged</div>
-          </div>
-          <div style="text-align:right">
-            <span id="task2status" class="badge" style="background:#ffc107;color:#000">WAITING</span>
-            <div class="small" style="margin-top:2px">Takes: <span id="task2takes">0</span> | Runs: <span id="task2runs">0</span></div>
-          </div>
-        </div>
-        
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#0e121b;border-radius:6px;margin-bottom:6px">
-          <div>
-            <strong>Task 3: NeoPixel Hum</strong>
-            <div class="small" style="margin-top:2px">Consumer (Core 0, P:2) ← semHumChanged</div>
-          </div>
-          <div style="text-align:right">
-            <span id="task3status" class="badge" style="background:#ffc107;color:#000">WAITING</span>
-            <div class="small" style="margin-top:2px">Takes: <span id="task3takes">0</span> | Runs: <span id="task3runs">0</span></div>
-          </div>
-        </div>
-        
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#0e121b;border-radius:6px;margin-bottom:6px">
-          <div>
-            <strong>Task 5: LCD Display</strong>
-            <div class="small" style="margin-top:2px">Consumer (Core 0, P:1) ← semLcdUpdate</div>
-          </div>
-          <div style="text-align:right">
-            <span id="task5status" class="badge" style="background:#ffc107;color:#000">WAITING</span>
-            <div class="small" style="margin-top:2px">Runs: <span id="task5runs">0</span></div>
-          </div>
-        </div>
+    <div class="status-badges">
+      <div class="badge badge-success" id="tempBadge">
+        🌡️ <span id="tempBadgeText">NORMAL</span>
       </div>
-      
-      <div style="background:#0e121b;padding:10px;border-radius:6px">
-        <strong>Semaphore Events:</strong>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          <div>
-            <div class="small">semBandChanged (Temp)</div>
-            <div style="font-size:1.2em;font-weight:bold;color:var(--ok)">
-              <span id="semTempGives">0</span> → <span id="semTempTakes">0</span>
-            </div>
-          </div>
-          <div>
-            <div class="small">semHumChanged (Hum)</div>
-            <div style="font-size:1.2em;font-weight:bold;color:var(--blue)">
-              <span id="semHumGives">0</span> → <span id="semHumTakes">0</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="card">
-      <div class="section-title">TASK 5 — TinyML Anomaly Score</div>
-      <div class="gauge-wrap">
-        <div id="tinyGauge" class="gauge-fill"></div>
-        <div id="tinyGaugeLabel" class="gauge-label">-</div>
-      </div>
-      <p class="small">Inference score updates when the TinyML task acquires <code>gLive</code> sensor data &amp; runs inference. 0 = normal, 1 = unusual.</p>
-      <div class="flex">
-        <span class="badge">Status: <span id="tinyStatus" class="status-wait">Waiting...</span></span>
-        <span class="badge">Runs: <span id="tinyRuns">0</span></span>
-        <span class="badge">Last: <span id="tinyAgo">-</span></span>
-      </div>
-    </div>
-    
-    <!-- System Health Dashboard -->
-    <div class="card">
-      <div class="section-title">🖥️ SYSTEM HEALTH</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-        <div style="background:#0e121b;padding:10px;border-radius:8px">
-          <div class="small" style="color:var(--muted)">Free Heap</div>
-          <div style="font-size:1.4em;font-weight:700;color:var(--ok)">
-            <span id="freeHeap">-</span> KB
-          </div>
-          <div class="small" style="margin-top:4px">Min: <span id="minFreeHeap">-</span> KB</div>
-        </div>
-        <div style="background:#0e121b;padding:10px;border-radius:8px">
-          <div class="small" style="color:var(--muted)">WiFi RSSI</div>
-          <div style="font-size:1.4em;font-weight:700" id="rssiColor">
-            <span id="wifiRSSI">-</span> dBm
-          </div>
-          <div class="small" style="margin-top:4px" id="rssiQuality">-</div>
-        </div>
-      </div>
-      <div style="background:#0e121b;padding:10px;border-radius:8px;margin-top:10px">
-        <div class="small" style="color:var(--muted)">System Uptime</div>
-        <div style="font-size:1.4em;font-weight:700;color:var(--blue)" id="uptime">-</div>
-      </div>
-    </div>
-    
-    <!-- Historical Data Chart -->
-    <div class="card">
-      <div class="section-title">📊 HISTORICAL DATA (Last 50 readings)</div>
-      <canvas id="historyChart" width="100%" height="200" style="max-height:200px"></canvas>
-      <p class="small" style="margin-top:8px">Blue: Temperature (°C) | Orange: Humidity (%)</p>
-    </div>
-    
-    <!-- Alert System -->
-    <div class="card" id="alertCard" style="border:2px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="section-title">🔔 ALERT SYSTEM</div>
-        <button id="btnAlertToggle" class="btn-ghost" style="padding:4px 12px;font-size:12px">ON</button>
-      </div>
-      <div id="alertStatus" style="margin-top:10px">
-        <div style="padding:8px;background:#0e121b;border-radius:6px;margin-bottom:6px">
-          <span class="badge" id="alertTemp" style="background:#28a745">✓ Temperature OK</span>
-        </div>
-        <div style="padding:8px;background:#0e121b;border-radius:6px;margin-bottom:6px">
-          <span class="badge" id="alertHum" style="background:#28a745">✓ Humidity OK</span>
-        </div>
-        <div style="padding:8px;background:#0e121b;border-radius:6px;margin-bottom:6px">
-          <span class="badge" id="alertAnomaly" style="background:#28a745">✓ No Anomaly</span>
-        </div>
-      </div>
-      <div style="margin-top:10px;padding:8px;background:#0e121b;border-radius:6px">
-        <div class="small">Alert Counter: <strong><span id="alertCount">0</span></strong></div>
-        <div class="small">Last Alert: <span id="lastAlert">-</span></div>
+      <div class="badge badge-success" id="humBadge">
+        💧 <span id="humBadgeText">COMFORT</span>
       </div>
     </div>
   </div>
-
-  <!-- RIGHT: settings + wifi -->
-  <div>
-    <div class="card">
-      <div class="section-title">TASK 1 — LED (TEMPERATURE)</div>
-      <label>COLD max (°C)</label><input id="tcold" type="number" step="0.1" value="20.0" autocomplete="off">
-      <label>NORMAL max (°C)</label><input id="tnorm" type="number" step="0.1" value="30.0" autocomplete="off">
-      <label>HOT max (°C)</label><input id="thot" type="number" step="0.1" value="40.0" autocomplete="off">
-
-      <div class="section-title">TASK 2 — HUMIDITY NEOPIXEL (GPIO 45)</div>
-      <label>DRY max (%)</label><input id="hdry" type="number" step="0.1" value="40.0" autocomplete="off">
-      <label>COMFORT max (%)</label><input id="hcomf" type="number" step="0.1" value="60.0" autocomplete="off">
-      <label>HUMID max (%)</label><input id="hhum" type="number" step="0.1" value="80.0" autocomplete="off">
-
-      <div class="section-title">TASK 2b — UI BAR (GPIO 6, 4 PX)</div>
-      <div class="flex">
-        <button id="btnUiOff" class="btn-ghost">OFF</button>
-        <button id="btnUiBar" class="btn-ghost">BAR</button>
-        <button id="btnUiDemo" class="btn-ghost">DEMO</button>
-      </div>
-
-      <div class="section-title">TASK 3 — LCD</div>
-      <p class="small">LCD refreshes whenever the DHT task gives <code>semLcdUpdate</code>.</p>
-
-      <button id="btnSave" style="margin-top:12px">Save thresholds</button>
-      <p id="saveMsg" class="small"></p>
-    </div>
-
-    <div class="card">
-      <div class="section-title">Wi-Fi Config</div>
-      <label>Mode</label>
-      <select id="wifiMode">
-        <option value="ap">Access Point</option>
-        <option value="sta">Station</option>
-      </select>
-      <label>SSID</label><input id="wifiSsid" placeholder="your-ssid" autocomplete="off">
-      <label>Password</label><input id="wifiPass" placeholder="your-password" type="password" autocomplete="off">
-      <button id="btnWifi" style="margin-top:8px">Apply Wi-Fi</button>
-      <p id="wifiMsg" class="small"></p>
-    </div>
+  <div class="header-info">
+    <span>📡 <strong>AP:</strong> <span id="apName">ESP32-S3-LAB</span></span>
+    <span>🌐 <strong>IP:</strong> <span id="ipAddr">192.168.4.1</span></span>
+    <span>⏱️ <strong>Uptime:</strong> <span id="uptime">0s</span></span>
   </div>
 </div>
 
+<!-- Tabs -->
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
+    <button class="tab" onclick="showTab('configuration')">Configuration</button>
+    <button class="tab" onclick="showTab('controls')">Controls</button>
+    <button class="tab" onclick="showTab('events')">Events</button>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div id="dashboard" class="tab-content active">
+    <div class="card">
+      <div class="card-title">📊 Live Sensors</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        
+        <!-- Temperature -->
+        <div class="sensor-block">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="sensor-icon">🌡️</span>
+            <div style="flex:1;">
+              <div class="sensor-value">
+                <span id="tempValue">--</span>
+                <span class="sensor-unit">°C</span>
+              </div>
+              <div class="sensor-band">Band: <span id="tband">-</span></div>
+              <div class="progress-bar">
+                <div id="tempProgress" class="progress-fill" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Humidity -->
+        <div class="sensor-block">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="sensor-icon">💧</span>
+            <div style="flex:1;">
+              <div class="sensor-value">
+                <span id="humValue">--</span>
+                <span class="sensor-unit">%</span>
+              </div>
+              <div class="sensor-band">Band: <span id="hband">-</span></div>
+              <div class="progress-bar">
+                <div id="humProgress" class="progress-fill" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Task Monitor -->
+    <div class="card">
+      <div class="card-title">⚙️ Task Monitor</div>
+      <div class="task-list">
+        <div class="task-item">
+          <div class="task-info">
+            <h4>Task 1: DHT20 Sensor</h4>
+            <div class="small">Producer (Core 1, P:3)</div>
+          </div>
+          <div class="task-status">
+            <span id="task1status" class="status-badge status-running">RUNNING</span>
+            <div class="small" style="margin-top:4px">Runs: <span id="task1runs">0</span></div>
+          </div>
+        </div>
+        
+        <div class="task-item">
+          <div class="task-info">
+            <h4>Task 2: LED Control</h4>
+            <div class="small">Consumer (Core 0, P:2) ← semBandChanged</div>
+          </div>
+          <div class="task-status">
+            <span id="task2status" class="status-badge status-waiting">WAITING</span>
+            <div class="small" style="margin-top:4px">Takes: <span id="task2takes">0</span> | Runs: <span id="task2runs">0</span></div>
+          </div>
+        </div>
+        
+        <div class="task-item">
+          <div class="task-info">
+            <h4>Task 3: NeoPixel Humidity</h4>
+            <div class="small">Consumer (Core 0, P:2) ← semHumChanged</div>
+          </div>
+          <div class="task-status">
+            <span id="task3status" class="status-badge status-waiting">WAITING</span>
+            <div class="small" style="margin-top:4px">Takes: <span id="task3takes">0</span> | Runs: <span id="task3runs">0</span></div>
+          </div>
+        </div>
+        
+        <div class="task-item">
+          <div class="task-info">
+            <h4>Task 5: LCD Display</h4>
+            <div class="small">Consumer (Core 0, P:1) ← semLcdUpdate</div>
+          </div>
+          <div class="task-status">
+            <span id="task5status" class="status-badge status-waiting">WAITING</span>
+            <div class="small" style="margin-top:4px">Runs: <span id="task5runs">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TinyML -->
+    <div class="card">
+      <div class="card-title">🤖 TinyML Anomaly Detection</div>
+      <div class="sensor-band">Anomaly Score: <span id="tinyScore">-</span></div>
+      <div class="progress-bar" style="margin:16px 0">
+        <div id="tinyProgress" class="progress-fill" style="width:0%; background:linear-gradient(90deg, var(--green), var(--yellow), var(--red))"></div>
+      </div>
+      <div class="small">Status: <strong id="tinyStatus">Waiting...</strong> | Runs: <strong id="tinyRuns">0</strong></div>
+    </div>
+  </div>
+
+  <!-- Configuration Tab -->
+  <div id="configuration" class="tab-content">
+    <div class="card">
+      <div class="card-title">🌡️ Thresholds Configuration</div>
+      <div class="config-grid">
+        <div class="config-section">
+          <h3>🌡️ Task 1 — LED / Temperature</h3>
+          <label>COLD max (°C)</label>
+          <input id="tcold" type="number" step="0.1" value="20.0" autocomplete="off">
+          
+          <label>NORMAL max (°C)</label>
+          <input id="tnorm" type="number" step="0.1" value="30.0" autocomplete="off">
+          
+          <label>HOT max (°C)</label>
+          <input id="thot" type="number" step="0.1" value="40.0" autocomplete="off">
+          
+          <div class="hint">CRITICAL is ≥ HOT max</div>
+        </div>
+
+        <div class="config-section">
+          <h3>💧 Task 2 — Humidity / NeoPixel 45</h3>
+          <label>DRY max (%)</label>
+          <input id="hdry" type="number" step="0.1" value="40.0" autocomplete="off">
+          
+          <label>COMFORT max (%)</label>
+          <input id="hcomf" type="number" step="0.1" value="60.0" autocomplete="off">
+          
+          <label>HUMID max (%)</label>
+          <input id="hhum" type="number" step="0.1" value="80.0" autocomplete="off">
+          
+          <div class="hint">WET is ≥ HUMID max</div>
+        </div>
+      </div>
+      
+      <button id="btnSave">💾 Save Thresholds</button>
+      <div class="small" id="saveMsg" style="margin-top:8px"></div>
+    </div>
+
+    <!-- WiFi Config -->
+    <div class="card">
+      <div class="card-title">📡 WiFi Configuration</div>
+      <div class="config-grid">
+        <div>
+          <label>Mode</label>
+          <select id="wifiMode">
+            <option value="ap">Access Point</option>
+            <option value="sta">Station</option>
+          </select>
+        </div>
+        <div>
+          <label>SSID</label>
+          <input id="wifiSsid" placeholder="your-ssid" autocomplete="off">
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Password</label>
+          <input id="wifiPass" placeholder="your-password" type="password" autocomplete="off">
+        </div>
+      </div>
+      <button id="btnWifi">🌐 Apply WiFi Settings</button>
+      <div class="small" id="wifiMsg" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- Controls Tab -->
+  <div id="controls" class="tab-content">
+    <div class="card">
+      <div class="card-title">💡 UI NeoPixel (GPIO 6)</div>
+      <div class="btn-group">
+        <button id="btnUiOff" class="btn-outline">OFF</button>
+        <button id="btnUiBar" class="btn-outline">BAR</button>
+        <button id="btnUiDemo" class="btn-outline">DEMO</button>
+      </div>
+      <div class="small" style="margin-top:12px">4-LED Preview:</div>
+      <div class="led-preview">
+        <div class="led" id="led0"></div>
+        <div class="led" id="led1"></div>
+        <div class="led" id="led2"></div>
+        <div class="led" id="led3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Events Tab -->
+  <div id="events" class="tab-content">
+    <div class="card">
+      <div class="card-title">📋 System Events</div>
+      <div class="small">Event log and diagnostics will appear here...</div>
+    </div>
+  </div>
+
+</div>
+
 <script>
-// track which input is being edited so poll() doesn't overwrite it
+// Tab switching
+function showTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tabName).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Track which input is being edited
 const fields = ["tcold","tnorm","thot","hdry","hcomf","hhum"];
 const isEditing = {};
-const userValues = {};  // Store user-entered values
+const userValues = {};
 fields.forEach(id => {
   const el = document.getElementById(id);
-  el.addEventListener("focus", () => { 
-    isEditing[id] = true; 
-  });
+  el.addEventListener("focus", () => { isEditing[id] = true; });
   el.addEventListener("blur",  () => { 
-    userValues[id] = el.value;  // Save user value on blur
-    setTimeout(() => { isEditing[id] = false; }, 100);  // Delay to prevent immediate overwrite
+    userValues[id] = el.value;
+    setTimeout(() => { isEditing[id] = false; }, 100);
   });
-  el.addEventListener("input", () => {
-    userValues[id] = el.value;  // Save as user types
-  });
+  el.addEventListener("input", () => { userValues[id] = el.value; });
 });
 
 async function poll(){
@@ -272,22 +438,43 @@ async function poll(){
     const r = await fetch('/state');
     const j = await r.json();
 
-    document.getElementById('uptime').textContent = (j.ms/1000).toFixed(1)+'s';
+    // Update header badges
+    document.getElementById('tempBadgeText').textContent = j.tBand;
+    const tempBadge = document.getElementById('tempBadge');
+    if (j.tBand === 'CRITICAL' || j.tBand === 'HOT') {
+      tempBadge.className = 'badge badge-warning';
+    } else {
+      tempBadge.className = 'badge badge-success';
+    }
+
+    document.getElementById('humBadgeText').textContent = j.hBand;
+    const humBadge = document.getElementById('humBadge');
+    if (j.hBand === 'WET' || j.hBand === 'DRY') {
+      humBadge.className = 'badge badge-warning';
+    } else {
+      humBadge.className = 'badge badge-success';
+    }
+
+    // Update uptime
+    const secs = Math.floor(j.ms / 1000);
+    document.getElementById('uptime').textContent = secs < 60 ? secs+'s' : 
+      secs < 3600 ? Math.floor(secs/60)+'m '+(secs%60)+'s' :
+      Math.floor(secs/3600)+'h '+Math.floor((secs%3600)/60)+'m';
+
+    // Update sensor values
+    document.getElementById('tempValue').textContent = isNaN(j.tC) ? '--' : j.tC.toFixed(1);
+    document.getElementById('humValue').textContent = isNaN(j.rh) ? '--' : j.rh.toFixed(1);
     document.getElementById('tband').textContent = j.tBand;
-    document.getElementById('tband').className  = 'band '+j.tBand;
     document.getElementById('hband').textContent = j.hBand;
-    document.getElementById('hband').className  = 'band '+j.hBand;
 
-    document.getElementById('tempv').textContent = isNaN(j.tC)?'-':j.tC.toFixed(1)+' °C';
-    document.getElementById('humv').textContent  = isNaN(j.rh)?'-':j.rh.toFixed(1)+' %';
-    document.getElementById('ledv').textContent  = j.led? 'ON':'OFF';
-    document.getElementById('blinkv').textContent = j.blink_on+'/'+j.blink_off+' ms';
+    // Update progress bars
+    const tempPercent = Math.min(100, Math.max(0, (j.tC / 50) * 100));
+    document.getElementById('tempProgress').style.width = tempPercent + '%';
+    
+    const humPercent = Math.min(100, Math.max(0, j.rh));
+    document.getElementById('humProgress').style.width = humPercent + '%';
 
-    const hv = Math.min(100, Math.max(0, j.rh));
-    document.getElementById('hbar').style.width = hv + '%';
-    document.getElementById('hbar-label').textContent = hv.toFixed(1)+' %';
-
-    // only update if user not editing AND no user value stored
+    // Update config inputs (only if not editing)
     if (!isEditing["tcold"] && !userValues["tcold"]) document.getElementById('tcold').value = j.tcold;
     if (!isEditing["tnorm"] && !userValues["tnorm"]) document.getElementById('tnorm').value = j.tnorm;
     if (!isEditing["thot"] && !userValues["thot"]) document.getElementById('thot').value  = j.thot;
@@ -295,10 +482,13 @@ async function poll(){
     if (!isEditing["hcomf"] && !userValues["hcomf"]) document.getElementById('hcomf').value = j.hcomf;
     if (!isEditing["hhum"] && !userValues["hhum"]) document.getElementById('hhum').value  = j.hhum;
 
-    document.getElementById('uimode').textContent =
-      (j.uiMode==0?'OFF':(j.uiMode==1?'BAR':'DEMO'));
+    // Update UI mode buttons
+    document.querySelectorAll('#btnUiOff, #btnUiBar, #btnUiDemo').forEach(b => b.classList.remove('active'));
+    if (j.uiMode === 0) document.getElementById('btnUiOff').classList.add('active');
+    else if (j.uiMode === 1) document.getElementById('btnUiBar').classList.add('active');
+    else document.getElementById('btnUiDemo').classList.add('active');
 
-    // wifi mode (show current)
+    // WiFi mode
     const wm = document.getElementById('wifiMode');
     if (wm && (j.wifiMode === "ap" || j.wifiMode === "sta")) {
       wm.value = j.wifiMode;
@@ -314,12 +504,7 @@ async function poll(){
       document.getElementById('task2takes').textContent = j.takeTemp || 0;
       document.getElementById('task3takes').textContent = j.takeHum || 0;
       
-      document.getElementById('semTempGives').textContent = j.giveTemp || 0;
-      document.getElementById('semTempTakes').textContent = j.takeTemp || 0;
-      document.getElementById('semHumGives').textContent = j.giveHum || 0;
-      document.getElementById('semHumTakes').textContent = j.takeHum || 0;
-      
-      // Update task status badges based on activity
+      // Update task status badges
       const now = j.ms;
       const updateStatus = (id, lastMs, runs) => {
         const el = document.getElementById(id);
@@ -327,14 +512,13 @@ async function poll(){
         const delta = now - lastMs;
         if (runs > 0 && delta < 2000) {
           el.textContent = 'RUNNING';
-          el.style.background = '#28a745';
-          el.style.color = '#fff';
+          el.className = 'status-badge status-running';
         } else if (runs > 0) {
           el.textContent = 'WAITING';
-          el.style.background = '#ffc107';
-          el.style.color = '#000';
+          el.className = 'status-badge status-waiting';
         } else {
           el.textContent = 'IDLE';
+          el.className = 'status-badge';
           el.style.background = '#6c757d';
           el.style.color = '#fff';
         }
@@ -346,35 +530,23 @@ async function poll(){
       updateStatus('task5status', j.lcd_last_ms, j.lcd_runs);
     }
 
-    const gauge = document.getElementById('tinyGauge');
-    if (gauge) {
-      const score = j.tiny_score;
-      const gaugeLabel = document.getElementById('tinyGaugeLabel');
+    // Update TinyML
+    const score = j.tiny_score;
+    if (document.getElementById('tinyProgress')) {
+      const scorePercent = Math.min(100, Math.max(0, score * 100));
+      document.getElementById('tinyProgress').style.width = scorePercent + '%';
+      document.getElementById('tinyScore').textContent = isNaN(score) ? '-' : score.toFixed(3);
+      document.getElementById('tinyRuns').textContent = j.tinyml_runs || 0;
+      
       const statusEl = document.getElementById('tinyStatus');
-      const runsEl = document.getElementById('tinyRuns');
-      const agoEl = document.getElementById('tinyAgo');
-
-      const valid = typeof score === 'number' && !isNaN(score);
-      if (valid) {
-        const pct = Math.min(100, Math.max(0, score * 100));
-        gauge.style.width = pct + '%';
-        gaugeLabel.textContent = score.toFixed(3);
-        const status = score >= 0.6 ? 'Unusual' : 'Normal';
-        statusEl.textContent = status;
-        statusEl.className = status === 'Unusual' ? 'status-unusual' : 'status-normal';
-      } else {
-        gauge.style.width = '0%';
-        gaugeLabel.textContent = '-';
+      if (isNaN(score)) {
         statusEl.textContent = 'Waiting...';
-        statusEl.className = 'status-wait';
-      }
-
-      runsEl.textContent = (typeof j.tiny_runs === 'number') ? j.tiny_runs : 0;
-      if (j.tiny_last_ms && j.tiny_last_ms > 0) {
-        const delta = Math.max(0, (j.ms - j.tiny_last_ms) / 1000);
-        agoEl.textContent = delta.toFixed(1) + 's ago';
+      } else if (score < 0.3) {
+        statusEl.textContent = 'Normal';
+      } else if (score < 0.7) {
+        statusEl.textContent = 'Unusual';
       } else {
-        agoEl.textContent = '-';
+        statusEl.textContent = 'Anomaly!';
       }
     }
 
@@ -383,233 +555,9 @@ async function poll(){
   }
 }
 
-// Poll system health
-async function pollHealth() {
-  try {
-    const r = await fetch('/health');
-    const j = await r.json();
-    
-    // Update heap memory
-    const freeKB = (j.freeHeap / 1024).toFixed(1);
-    const minKB = (j.minFreeHeap / 1024).toFixed(1);
-    document.getElementById('freeHeap').textContent = freeKB;
-    document.getElementById('minFreeHeap').textContent = minKB;
-    
-    // Update WiFi RSSI with color coding
-    const rssi = j.wifiRSSI;
-    const rssiEl = document.getElementById('rssiColor');
-    const qualityEl = document.getElementById('rssiQuality');
-    
-    if (rssi === 0) {
-      document.getElementById('wifiRSSI').textContent = 'AP Mode';
-      rssiEl.style.color = 'var(--blue)';
-      qualityEl.textContent = 'Access Point';
-    } else {
-      document.getElementById('wifiRSSI').textContent = rssi;
-      if (rssi > -50) {
-        rssiEl.style.color = 'var(--ok)';
-        qualityEl.textContent = 'Excellent';
-      } else if (rssi > -70) {
-        rssiEl.style.color = 'var(--warn)';
-        qualityEl.textContent = 'Good';
-      } else {
-        rssiEl.style.color = 'var(--hot)';
-        qualityEl.textContent = 'Weak';
-      }
-    }
-    
-    // Update uptime in health card
-    const days = Math.floor(j.uptime / 86400);
-    const hrs = Math.floor((j.uptime % 86400) / 3600);
-    const mins = Math.floor((j.uptime % 3600) / 60);
-    const secs = j.uptime % 60;
-    let uptimeStr = '';
-    if (days > 0) uptimeStr += days + 'd ';
-    if (hrs > 0 || days > 0) uptimeStr += hrs + 'h ';
-    if (mins > 0 || hrs > 0 || days > 0) uptimeStr += mins + 'm ';
-    uptimeStr += secs + 's';
-    document.getElementById('uptime').textContent = uptimeStr;
-    
-  } catch(e) {
-    console.error('health poll error', e);
-  }
-}
-
-// Poll alerts
-async function pollAlerts() {
-  try {
-    const r = await fetch('/alerts');
-    const j = await r.json();
-    
-    const card = document.getElementById('alertCard');
-    const tempEl = document.getElementById('alertTemp');
-    const humEl = document.getElementById('alertHum');
-    const anomalyEl = document.getElementById('alertAnomaly');
-    
-    let hasAlert = false;
-    
-    // Temperature alert
-    if (j.tempCritical) {
-      tempEl.textContent = '⚠️ Temperature CRITICAL!';
-      tempEl.style.background = 'var(--hot)';
-      tempEl.style.color = '#fff';
-      hasAlert = true;
-    } else {
-      tempEl.textContent = '✓ Temperature OK';
-      tempEl.style.background = '#28a745';
-      tempEl.style.color = '#fff';
-    }
-    
-    // Humidity alert
-    if (j.humCritical) {
-      humEl.textContent = '⚠️ Humidity WET!';
-      humEl.style.background = 'var(--hot)';
-      humEl.style.color = '#fff';
-      hasAlert = true;
-    } else {
-      humEl.textContent = '✓ Humidity OK';
-      humEl.style.background = '#28a745';
-      humEl.style.color = '#fff';
-    }
-    
-    // Anomaly alert
-    if (j.anomalyDetected) {
-      anomalyEl.textContent = '⚠️ Anomaly Detected!';
-      anomalyEl.style.background = 'var(--warn)';
-      anomalyEl.style.color = '#000';
-      hasAlert = true;
-    } else {
-      anomalyEl.textContent = '✓ No Anomaly';
-      anomalyEl.style.background = '#28a745';
-      anomalyEl.style.color = '#fff';
-    }
-    
-    // Update card border to flash on alert
-    if (hasAlert && j.enabled) {
-      card.style.borderColor = 'var(--hot)';
-      card.style.animation = 'pulse 1s infinite';
-      
-      // Browser notification (if permissions granted)
-      if (Notification.permission === 'granted') {
-        if (j.tempCritical) {
-          new Notification('ESP32 Alert', { 
-            body: 'Temperature CRITICAL!',
-            icon: '🌡️'
-          });
-        }
-      }
-    } else {
-      card.style.borderColor = 'var(--border)';
-      card.style.animation = 'none';
-    }
-    
-    // Update counter and last alert time
-    document.getElementById('alertCount').textContent = j.alertCount;
-    if (j.lastAlertTime > 0) {
-      const ago = ((Date.now() - j.lastAlertTime) / 1000).toFixed(0);
-      document.getElementById('lastAlert').textContent = ago + 's ago';
-    }
-    
-    // Update toggle button
-    const btnToggle = document.getElementById('btnAlertToggle');
-    if (j.enabled) {
-      btnToggle.textContent = 'ON';
-      btnToggle.style.background = 'var(--ok)';
-      btnToggle.style.color = '#000';
-    } else {
-      btnToggle.textContent = 'OFF';
-      btnToggle.style.background = 'transparent';
-      btnToggle.style.color = 'var(--muted)';
-    }
-    
-  } catch(e) {
-    console.error('alerts poll error', e);
-  }
-}
-
-// Draw historical chart
-let chartData = { temp: [], hum: [], time: [] };
-async function pollHistory() {
-  try {
-    const r = await fetch('/history');
-    const j = await r.json();
-    chartData = j;
-    drawChart();
-  } catch(e) {
-    console.error('history poll error', e);
-  }
-}
-
-function drawChart() {
-  const canvas = document.getElementById('historyChart');
-  if (!canvas || !chartData.temp.length) return;
-  
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width = canvas.offsetWidth;
-  const h = canvas.height = 200;
-  
-  // Clear
-  ctx.fillStyle = '#0e121b';
-  ctx.fillRect(0, 0, w, h);
-  
-  const len = chartData.temp.length;
-  if (len < 2) return;
-  
-  // Find min/max for scaling
-  const tempMin = Math.min(...chartData.temp);
-  const tempMax = Math.max(...chartData.temp);
-  const humMin = Math.min(...chartData.hum);
-  const humMax = Math.max(...chartData.hum);
-  
-  const margin = 30;
-  const plotW = w - 2 * margin;
-  const plotH = h - 2 * margin;
-  
-  // Draw temperature line (blue)
-  ctx.strokeStyle = '#54c8ff';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let i = 0; i < len; i++) {
-    const x = margin + (i / (len - 1)) * plotW;
-    const y = h - margin - ((chartData.temp[i] - tempMin) / (tempMax - tempMin || 1)) * plotH;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-  
-  // Draw humidity line (orange)
-  ctx.strokeStyle = '#ffb020';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let i = 0; i < len; i++) {
-    const x = margin + (i / (len - 1)) * plotW;
-    const y = h - margin - ((chartData.hum[i] - humMin) / (humMax - humMin || 1)) * plotH;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-  
-  // Draw labels
-  ctx.fillStyle = '#a9b2c2';
-  ctx.font = '11px system-ui';
-  ctx.fillText('T: ' + tempMin.toFixed(1) + '-' + tempMax.toFixed(1) + '°C', 5, 15);
-  ctx.fillText('H: ' + humMin.toFixed(1) + '-' + humMax.toFixed(1) + '%', 5, 30);
-}
-
 setInterval(poll, 500);
-setInterval(pollHealth, 2000);
-setInterval(pollAlerts, 1000);
-setInterval(pollHistory, 3000);
 
 poll();
-pollHealth();
-pollAlerts();
-pollHistory();
-
-// Request notification permission
-if ('Notification' in window && Notification.permission === 'default') {
-  Notification.requestPermission();
-}
 
 document.getElementById('btnSave').addEventListener('click', async ()=>{
   const tc = parseFloat(document.getElementById('tcold').value);
@@ -663,14 +611,6 @@ document.getElementById('btnWifi').addEventListener('click', async ()=>{
   const url = `/wifi?mode=${mode}&ssid=${ssid}&pass=${pass}`;
   const r = await fetch(url);
   document.getElementById('wifiMsg').textContent = await r.text();
-});
-
-// Alert toggle
-document.getElementById('btnAlertToggle').addEventListener('click', async ()=>{
-  const r = await fetch('/alerts/toggle');
-  const msg = await r.text();
-  console.log(msg);
-  pollAlerts(); // Immediate refresh
 });
 </script>
 </body>
