@@ -60,27 +60,27 @@ The system employs a modular, event-driven architecture using FreeRTOS for task 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        ESP32-S3 System Core                          │
+│                        ESP32-S3 System Core                         │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
-│  │  Task 1  │  │  Task 2  │  │  Task 3  │  │  Task 4  │            │
-│  │  DHT20   │→→│   LED    │  │ NeoPixel │  │ NeoPixel │            │
-│  │  Sensor  │  │  Control │  │   Hum    │  │  UI Bar  │            │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────────┘            │
-│       │             │              │                                 │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
+│  │  Task 1  │  │  Task 2  │  │  Task 3  │  │  Task 4  │             │
+│  │  DHT20   │→→│   LED    │  │ NeoPixel │  │ NeoPixel │             │
+│  │  Sensor  │  │  Control │  │   Hum    │  │  UI Bar  │             │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────────┘             │
+│       │             │              │                                │
 │       │    ┌────────┴──────────────┘                                │
-│       └────┤                                                         │
-│            ↓                                                         │
+│       └────┤                                                        │
+│            ↓                                                        │
 │       ┌──────────┐        ┌──────────┐                              │
 │       │  Task 5  │        │  Task 6  │                              │
 │       │   LCD    │        │  TinyML  │                              │
 │       │ Display  │        │ Anomaly  │                              │
 │       └──────────┘        └──────────┘                              │
-│                                                                       │
+│                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
-│                      WiFi + Web Server                               │
-│                   HTTP API + Dashboard                               │
+│                      WiFi + Web Server                              │
+│                   HTTP API + Dashboard                              │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -844,7 +844,8 @@ SOFTWARE.
 - Embedded systems best practices
 
 ### Contributors
-- Tran Hoai Nhan, Vo Phuc Thien - Initial development and architecture
+- [Your Name] - Initial development and architecture
+- Community contributors (see GitHub contributors page)
 
 ---
 
