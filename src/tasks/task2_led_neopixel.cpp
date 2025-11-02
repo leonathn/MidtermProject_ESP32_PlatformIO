@@ -172,6 +172,18 @@ void task_neopixel_ui(void* pv) {
     Serial.println("[TASK4] NeoPixel UI bar started");
     Serial.println("[TASK4] No semaphore - runs independently (user-controlled)");
 
+    // SOS pattern: ... --- ... (3 short, 3 long, 3 short)
+    const int sosPattern[] = {1,0,1,0,1,0,0,3,0,3,0,3,0,0,1,0,1,0,1,0,0,0}; // 1=short, 3=long, 0=off
+    const int sosPatternLen = sizeof(sosPattern) / sizeof(sosPattern[0]);
+    int sosIndex = 0;
+    int sosBeatCount = 0;
+    const int sosBeatDuration = 2; // number of loop iterations per beat
+    
+    // Blink pattern state
+    bool blinkState = false;
+    int blinkCounter = 0;
+    const int blinkInterval = 3; // blink every 3 loop iterations
+
     for (;;) {
         if (gLive.uiMode == 0) {
             // Mode 0: OFF - all pixels off
@@ -181,12 +193,25 @@ void task_neopixel_ui(void* pv) {
             stripUI.show();
             
         } else if (gLive.uiMode == 1) {
-            // Mode 1: BAR - show humidity as bar graph
+            // Mode 1: BAR - show humidity as bar graph (4 LEDs)
             float h = gLive.rh;
-            int ledsOn = map((int)h, 0, 100, 0, NEOPIXEL_UI_NUM);
-            if (ledsOn < 0) ledsOn = 0;
-            if (ledsOn > NEOPIXEL_UI_NUM) ledsOn = NEOPIXEL_UI_NUM;
             
+            // Calculate number of LEDs to light (1-4 based on humidity percentage)
+            // 0-25%: 1 LED, 25-50%: 2 LEDs, 50-75%: 3 LEDs, 75-100%: 4 LEDs
+            int ledsOn;
+            if (h >= 75.0) {
+                ledsOn = 4;
+            } else if (h >= 50.0) {
+                ledsOn = 3;
+            } else if (h >= 25.0) {
+                ledsOn = 2;
+            } else if (h > 0) {
+                ledsOn = 1;
+            } else {
+                ledsOn = 0;
+            }
+            
+            // Light up the appropriate number of LEDs
             for (int i = 0; i < NEOPIXEL_UI_NUM; i++) {
                 if (i < ledsOn) {
                     stripUI.setPixelColor(i, stripUI.Color(0, 100, 255));
@@ -196,7 +221,7 @@ void task_neopixel_ui(void* pv) {
             }
             stripUI.show();
             
-        } else {
+        } else if (gLive.uiMode == 2) {
             // Mode 2: DEMO - rainbow animation
             for (int i = 0; i < NEOPIXEL_UI_NUM; i++) {
                 uint8_t r = (uint8_t)((sin((hue + i * 40) * 0.02f) + 1) * 127);
@@ -206,6 +231,47 @@ void task_neopixel_ui(void* pv) {
             }
             stripUI.show();
             hue += 12;
+            
+        } else if (gLive.uiMode == 3) {
+            // Mode 3: SOS - S.O.S distress signal pattern
+            sosBeatCount++;
+            if (sosBeatCount >= sosBeatDuration) {
+                sosBeatCount = 0;
+                sosIndex = (sosIndex + 1) % sosPatternLen;
+            }
+            
+            int state = sosPattern[sosIndex];
+            if (state > 0) {
+                // Red flashing for SOS
+                for (int i = 0; i < NEOPIXEL_UI_NUM; i++) {
+                    stripUI.setPixelColor(i, stripUI.Color(255, 0, 0));
+                }
+            } else {
+                for (int i = 0; i < NEOPIXEL_UI_NUM; i++) {
+                    stripUI.setPixelColor(i, 0);
+                }
+            }
+            stripUI.show();
+            
+        } else if (gLive.uiMode == 4) {
+            // Mode 4: BLINK - Fast warning blink
+            blinkCounter++;
+            if (blinkCounter >= blinkInterval) {
+                blinkCounter = 0;
+                blinkState = !blinkState;
+            }
+            
+            if (blinkState) {
+                // Orange/Yellow warning color
+                for (int i = 0; i < NEOPIXEL_UI_NUM; i++) {
+                    stripUI.setPixelColor(i, stripUI.Color(255, 100, 0));
+                }
+            } else {
+                for (int i = 0; i < NEOPIXEL_UI_NUM; i++) {
+                    stripUI.setPixelColor(i, 0);
+                }
+            }
+            stripUI.show();
         }
         
         vTaskDelay(pdMS_TO_TICKS(UI_STRIP_UPDATE_MS));

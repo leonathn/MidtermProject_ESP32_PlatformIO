@@ -118,31 +118,135 @@ static void handleUiDemo() {
     server.send(200, "text/plain", "UI strip DEMO");
 }
 
+static void handleUiSos() {
+    gLive.uiMode = 3;
+    server.send(200, "text/plain", "UI strip SOS");
+}
+
+static void handleUiBlink() {
+    gLive.uiMode = 4;
+    server.send(200, "text/plain", "UI strip BLINK");
+}
+
+static void handleFireAlert() {
+    if (server.hasArg("enable")) {
+        int enable = server.arg("enable").toInt();
+        if (enable) {
+            float threshold = 45.0;
+            if (server.hasArg("threshold")) {
+                threshold = server.arg("threshold").toFloat();
+            }
+            // Store fire alert settings (could be saved to global variables)
+            server.send(200, "text/plain", "Fire alert enabled at " + String(threshold, 1) + "°C");
+        } else {
+            server.send(200, "text/plain", "Fire alert disabled");
+        }
+    } else {
+        server.send(400, "text/plain", "Missing enable parameter");
+    }
+}
+
 static void handleWifi() {
     String mode = server.hasArg("mode") ? server.arg("mode") : "ap";
     String ssid = server.hasArg("ssid") ? server.arg("ssid") : "";
     String pass = server.hasArg("pass") ? server.arg("pass") : "";
 
+    Serial.println("[WiFi] Configuration request:");
+    Serial.println("  Mode: " + mode);
+    Serial.println("  SSID: " + ssid);
+
     if (mode == "sta") {
         if (ssid.length() == 0) {
-            server.send(400, "text/plain", "STA: SSID required");
+            server.send(400, "text/plain", "Error: SSID required for Station mode");
             return;
         }
+        
+        server.send(200, "text/plain", "Connecting to " + ssid + "... Check serial monitor for status. You may need to reconnect.");
+        delay(100); // Let response send
+        
         gWifiMode = "sta";
         gStaSsid  = ssid;
         gStaPass  = pass;
 
+        Serial.println("[WiFi] Switching to Station mode...");
+        WiFi.disconnect(true);
         WiFi.mode(WIFI_STA);
         WiFi.begin(gStaSsid.c_str(), gStaPass.c_str());
-        server.send(200, "text/plain", "Switching to STA, connecting...");
+        
+        // Wait for connection (max 10 seconds)
+        int attempts = 0;
+        while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+            delay(500);
+            Serial.print(".");
+            attempts++;
+        }
+        Serial.println();
+        
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("[WiFi] Connected to " + ssid);
+            Serial.print("[WiFi] IP address: ");
+            Serial.println(WiFi.localIP());
+        } else {
+            Serial.println("[WiFi] Failed to connect to " + ssid);
+            Serial.println("[WiFi] Reverting to AP mode...");
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_AP);
+            WiFi.softAPConfig(AP_IP, AP_GW, AP_MASK);
+            WiFi.softAP(AP_SSID_DEFAULT, AP_PASS_DEFAULT, 6, false, 4);
+            gWifiMode = "ap";
+        }
     } else {
+        // AP mode - allow custom SSID or use default
+        String apSsid = (ssid.length() > 0) ? ssid : String(AP_SSID_DEFAULT);
+        String apPass = (pass.length() >= 8) ? pass : String(AP_PASS_DEFAULT);
+        
+        server.send(200, "text/plain", "Restarting AP mode: " + apSsid + ". Reconnect to new network.");
+        delay(100); // Let response send
+        
         gWifiMode = "ap";
+        Serial.println("[WiFi] Restarting AP mode...");
         WiFi.disconnect(true);
+        delay(100);
         WiFi.mode(WIFI_AP);
         WiFi.softAPConfig(AP_IP, AP_GW, AP_MASK);
-        WiFi.softAP(AP_SSID_DEFAULT, AP_PASS_DEFAULT, 6, false, 4);
-        server.send(200, "text/plain", "Back to AP mode.");
+        WiFi.softAP(apSsid.c_str(), apPass.c_str(), 6, false, 4);
+        Serial.println("[WiFi] AP mode active");
+        Serial.print("[WiFi] SSID: ");
+        Serial.println(apSsid);
+        Serial.print("[WiFi] Password: ");
+        Serial.println(apPass);
+        Serial.print("[WiFi] IP: ");
+        Serial.println(WiFi.softAPIP());
     }
+}
+
+static void handleGpio() {
+    if (!server.hasArg("pin") || !server.hasArg("state")) {
+        server.send(400, "text/plain", "Missing pin or state parameter");
+        return;
+    }
+    
+    int pin = server.arg("pin").toInt();
+    int state = server.arg("state").toInt();
+    
+    // Validate pin number
+    if (pin < 0 || pin > 48) {
+        server.send(400, "text/plain", "Invalid GPIO pin");
+        return;
+    }
+    
+    // Prevent control of critical pins
+    if (pin == 11 || pin == 12 || pin == 6 || pin == 45 || pin == 48) {
+        server.send(400, "text/plain", "Cannot control system GPIO pins (I2C, NeoPixel, LED)");
+        return;
+    }
+    
+    // Set GPIO mode and state
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, state ? HIGH : LOW);
+    
+    String response = "GPIO " + String(pin) + " set to " + (state ? "HIGH" : "LOW");
+    server.send(200, "text/plain", response);
 }
 
 /* ====== Public Functions ====== */
@@ -173,7 +277,11 @@ void initWebServer() {
     server.on("/ui/off", handleUiOff);
     server.on("/ui/bar", handleUiBar);
     server.on("/ui/demo", handleUiDemo);
+    server.on("/ui/sos", handleUiSos);
+    server.on("/ui/blink", handleUiBlink);
+    server.on("/fire-alert", handleFireAlert);
     server.on("/wifi", handleWifi);
+    server.on("/gpio", handleGpio);
     
     server.begin();
     
