@@ -98,10 +98,6 @@ The system employs a modular, event-driven architecture using FreeRTOS for task 
 | **NeoPixel Strip** | WS2812B (1 pixel) | 1 | Humidity indicator (GPIO 45) |
 | **NeoPixel Strip** | WS2812B (4 pixels) | 1 | UI Bar (GPIO 6) |
 
-### Optional Components
-- Current-limiting resistors for LED (220Ω recommended)
-- Breadboard and jumper wires
-- Power supply (USB-C for ESP32-S3)
 
 ### Specifications
 - **Operating Voltage**: 3.3V logic, 5V for NeoPixels
@@ -848,8 +844,7 @@ SOFTWARE.
 - Embedded systems best practices
 
 ### Contributors
-- [Your Name] - Initial development and architecture
-- Community contributors (see GitHub contributors page)
+- Tran Hoai Nhan, Vo Phuc Thien - Initial development and architecture
 
 ---
 
