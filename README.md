@@ -848,8 +848,8 @@ SOFTWARE.
 - Embedded systems best practices
 
 ### Contributors
-- [Your Name] - Initial development and architecture
-- Community contributors (see GitHub contributors page)
+- Tran Hoai Nhan - Head Engineer and Manager
+- Vo Phuc Thien - Assistant Engineer and Maintenance 
 
 ---
 
