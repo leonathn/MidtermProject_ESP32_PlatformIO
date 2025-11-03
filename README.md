@@ -202,7 +202,7 @@ LCD_ADDR       = 0x21
 
 ---
 
-## � Hardware Gallery
+##  Hardware Gallery
 
 ### Complete System Assembly
 
@@ -260,7 +260,7 @@ LCD_ADDR       = 0x21
 
 ---
 
-## �💻 Software Architecture
+## 💻 Software Architecture
 
 ### Module Organization
 
