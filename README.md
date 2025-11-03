@@ -31,7 +31,7 @@ This is a **smart environmental monitoring system** that watches the temperature
   - **Yellow** = Getting humid (60-80%)
   - **Red** = Too wet (above 80%)
 
-**� Web Dashboard Access**
+** Web Dashboard Access**
 - Connect your phone/laptop to WiFi: `ESP32-S3-LAB` (password: `12345678`)
 - Open browser to: `http://192.168.4.1`
 - See live temperature, humidity, and system status
@@ -62,7 +62,7 @@ This is a **smart environmental monitoring system** that watches the temperature
 
 ---
 
-## �📋 Table of Contents
+## 📋 Table of Contents
 
 - [What Does This System Do?](#-what-does-this-system-do)
 - [Features](#-features)
