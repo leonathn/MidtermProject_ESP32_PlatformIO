@@ -148,7 +148,65 @@ LCD_ADDR       = 0x21
 
 ---
 
-## 💻 Software Architecture
+## � Hardware Gallery
+
+### Complete System Assembly
+
+<div align="center">
+  <img src="data/Hardware/FullSetup.jpg" alt="Complete Hardware Setup" width="700"/>
+  <p><i>Full system with ESP32-S3, DHT20 sensor, LCD display, relay, and NeoPixel strips</i></p>
+</div>
+
+### Hardware Components
+
+<table>
+<tr>
+<td width="50%">
+  <img src="data/Hardware/Yolo_Uno_ESP32-S3kit.png" alt="YOLO UNO ESP32-S3" width="100%"/>
+  <p align="center"><b>YOLO UNO ESP32-S3 Development Board</b><br/>
+  Dual-core @ 240MHz, 512KB SRAM, 8MB Flash<br/>
+  Built-in LED (GPIO 48) & NeoPixel (GPIO 45)</p>
+</td>
+<td width="50%">
+  <img src="data/Hardware/DHT20Module.png" alt="DHT20 Sensor" width="100%"/>
+  <p align="center"><b>DHT20 Temperature & Humidity Sensor</b><br/>
+  I2C Address: 0x38<br/>
+  ±0.3°C accuracy, ±3% RH accuracy</p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+  <img src="data/Hardware/LCD1602Module.png" alt="LCD 16x2" width="100%"/>
+  <p align="center"><b>LCD 16x2 with I2C Backpack</b><br/>
+  I2C Address: 0x21<br/>
+  Displays temperature, humidity, and bands</p>
+</td>
+<td width="50%">
+  <img src="data/Hardware/NeoPixel4LED.png" alt="NeoPixel Strip" width="100%"/>
+  <p align="center"><b>NeoPixel 4-LED Strip (WS2812B)</b><br/>
+  GPIO 6 - UI Bar visualization<br/>
+  Addressable RGB LEDs</p>
+</td>
+</tr>
+</table>
+
+### System Wiring Diagram
+
+<div align="center">
+  <img src="data/Diagram/HardwareWiring.png" alt="Hardware Wiring Diagram" width="800"/>
+  <p><i>Complete GPIO pin assignments and I2C bus connections</i></p>
+</div>
+
+**Key Connections:**
+- **I2C Bus (GPIO 11/12):** Shared between DHT20 (0x38) and LCD (0x21)
+- **GPIO 48:** Built-in LED for temperature indication
+- **GPIO 45:** Built-in NeoPixel for humidity indication
+- **GPIO 6:** External NeoPixel 4-LED strip for UI bar
+- **USB-C:** Power (5V) and serial communication (115200 baud)
+
+---
+
+## �💻 Software Architecture
 
 ### Module Organization
 
@@ -188,6 +246,51 @@ src/
   - Adafruit NeoPixel (v1.15.2)
   - LiquidCrystal_I2C (v1.1.4)
   - TensorFlowLite_ESP32 (v1.0.0)
+
+---
+
+## 📊 System Architecture Diagrams
+
+### Task Communication Flow
+
+<div align="center">
+  <img src="data/Diagram/TaskCommunicationFlow.png" alt="Task Communication Flow" width="800"/>
+  <p><i>Producer-Consumer pattern with binary semaphore signaling between tasks</i></p>
+</div>
+
+**Key Points:**
+- **Task 1 (DHT20 Sensor)** acts as producer, reading sensor every 500ms
+- **Tasks 2, 3, 5** act as consumers, waking only when semaphore signaled
+- **Zero polling:** Consumer tasks sleep with 0% CPU usage until needed
+- **<1ms response:** Semaphore wakeup latency under 1 millisecond
+- **99.86% efficiency:** Eliminates 99.86% of unnecessary task wakeups vs polling
+
+### System Boot Sequence
+
+<div align="center">
+  <img src="data/Diagram/SystemBootSequence.png" alt="System Boot Sequence" width="800"/>
+  <p><i>Complete initialization timeline from power-on to operational state (2.1 seconds)</i></p>
+</div>
+
+**Boot Phases:**
+1. **Core Init (0-50ms):** Bootloader, Arduino framework, Serial
+2. **Hardware Setup (50-200ms):** Semaphores, I2C, DHT20, LCD, NeoPixels
+3. **Network Layer (200-2000ms):** WiFi AP, HTTP server, 11 API endpoints
+4. **Task Creation (2000-2100ms):** 6 FreeRTOS tasks with priorities and stacks
+5. **Scheduler Active (2100ms+):** FreeRTOS scheduler takes control
+
+### Task Execution Timeline
+
+<div align="center">
+  <img src="data/Diagram/ExcutionTimeline.png" alt="Execution Timeline" width="800"/>
+  <p><i>1-second window showing priority-based preemptive scheduling in action</i></p>
+</div>
+
+**Observations:**
+- **Task 1 (P:3)** preempts all lower-priority tasks when it wakes
+- **88% CPU idle time** - system highly efficient, tasks sleep when not needed
+- **Deterministic behavior** - high-priority tasks complete within 1-2ms of wakeup
+- **No starvation** - even lowest-priority tasks get sufficient CPU time
 
 ---
 
@@ -313,6 +416,39 @@ POST /fire-alert    → Control fire alert system (param: enable=0|1)
 POST /wifi          → Configure WiFi (params: mode, ssid, pass)
 POST /gpio          → Control GPIO (params: pin, state)
 ```
+
+### Web Dashboard Screenshots
+
+<table>
+<tr>
+<td width="50%">
+  <img src="data/Dashboard.png" alt="Main Dashboard" width="100%"/>
+  <p align="center"><b>Main Dashboard</b><br/>
+  Real-time sensor readings, band classification,<br/>
+  task telemetry, and TinyML anomaly score</p>
+</td>
+<td width="50%">
+  <img src="data/ConfigurationPage.png" alt="Configuration Page" width="100%"/>
+  <p align="center"><b>Configuration Page</b><br/>
+  Runtime threshold adjustment for temperature<br/>
+  and humidity bands + WiFi settings</p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+  <img src="data/ControlPage.png" alt="Control Page" width="100%"/>
+  <p align="center"><b>Control Page</b><br/>
+  NeoPixel UI mode selection (OFF/BAR/DEMO/SOS)<br/>
+  and GPIO remote control (40 pins)</p>
+</td>
+<td width="50%">
+  <img src="data/MainPage.png" alt="Landing Page" width="100%"/>
+  <p align="center"><b>Landing Page</b><br/>
+  System overview with quick access<br/>
+  to all features and documentation</p>
+</td>
+</tr>
+</table>
 
 ### Example State Response
 ```json
@@ -623,7 +759,41 @@ MidtermProject_ESP32_PlatformIO/
 │
 ├── test/                       # Unit tests (empty)
 │
-├── data/                       # SPIFFS data (empty)
+├── data/                       # Project documentation & media
+│   ├── Diagram/               # System architecture diagrams
+│   │   ├── ExcutionTimeline.png        # Task scheduling timeline
+│   │   ├── HardwareWiring.png          # GPIO and I2C connections
+│   │   ├── SystemBootSequence.png      # Boot initialization flow
+│   │   ├── TaskCommunicationFlow.png   # Semaphore signaling
+│   │   ├── WebUserFlow.png             # Web dashboard flow
+│   │   ├── README.md                   # Diagram documentation
+│   │   └── QUICK_EXPORT_GUIDE.md       # How to generate diagrams
+│   │
+│   ├── Hardware/              # Hardware photos
+│   │   ├── FullSetup.jpg               # Complete system assembly
+│   │   ├── Yolo_Uno_ESP32-S3kit.png    # Development board
+│   │   ├── DHT20Module.png             # Temperature sensor
+│   │   ├── LCD1602Module.png           # Display module
+│   │   ├── NeoPixel4LED.png            # LED strip
+│   │   ├── Relay.png                   # Relay module
+│   │   ├── GPIO.png                    # GPIO pinout
+│   │   ├── SensorsAndLCD.jpg           # Sensors assembly
+│   │   └── Sensors_Relay_NeoPixelModule.jpg
+│   │
+│   ├── Dashboard.png          # Main web dashboard screenshot
+│   ├── ConfigurationPage.png  # Configuration interface
+│   ├── ControlPage.png        # Control panel
+│   ├── MainPage.png           # Landing page
+│   │
+│   ├── Dashboard/             # Dashboard detailed screenshots
+│   ├── Configuration/         # Configuration page screens
+│   └── Control/               # Control interface screens
+│
+├── MERMAID_DIAGRAMS.md        # 15 interactive Mermaid diagrams
+├── PROJECT_REPORT.tex         # Comprehensive LaTeX report (~30 pages)
+├── DIAGRAM_INTEGRATION_SUMMARY.md # Diagram usage guide
+├── REVISION_SUMMARY.md        # Report revision history
+├── LATEX_COMPILATION_GUIDE.md # LaTeX setup instructions
 │
 ├── .gitignore                 # Git ignore rules
 ├── .pio/                      # PlatformIO build artifacts (ignored)
