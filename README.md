@@ -406,7 +406,7 @@ Look for this output in the serial monitor:
 
 ╔════════════════════════════════════════════════╗
 ║              System Ready                      ║
-║  Connect to: ESP32-S3-LAB (password: 12345678)║
+║  Connect to: ESP32-S3-LAB (password: 12345678) ║
 ║  Dashboard: http://192.168.4.1                 ║
 ╚════════════════════════════════════════════════╝
 ```
