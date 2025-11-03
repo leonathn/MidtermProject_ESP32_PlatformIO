@@ -65,11 +65,11 @@ The system employs a modular, event-driven architecture using FreeRTOS for task 
 │                                                                     │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
 │  │  Task 1  │  │  Task 2  │  │  Task 3  │  │  Task 4  │             │
-│  │  DHT20   │→→│   LED    │  │ NeoPixel │  │ NeoPixel │             │
+│  │  DHT20   │→→│   LED    │→→│ NeoPixel │  │ NeoPixel │             │
 │  │  Sensor  │  │  Control │  │   Hum    │  │  UI Bar  │             │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────────┘             │
-│       │             │              │                                │
-│       │    ┌────────┴──────────────┘                                │
+│       │             │             │                                 │
+│       │    ┌────────┴─────────────┘                                 │
 │       └────┤                                                        │
 │            ↓                                                        │
 │       ┌──────────┐        ┌──────────┐                              │
