@@ -9,8 +9,62 @@ A professional embedded systems project featuring real-time environmental monito
 
 ---
 
-## 📋 Table of Contents
+## 🎯 What Does This System Do?
 
+### For End Users
+
+This is a **smart environmental monitoring system** that watches the temperature and humidity in your room and provides **visual alerts** and **web-based control**:
+
+**🌡️ Temperature Monitoring**
+- Continuously measures room temperature
+- LED blinks at different speeds based on temperature:
+  - **Slow blink** = Cold (below 20°C)
+  - **Medium blink** = Normal (20-30°C) 
+  - **Fast blink** = Hot (30-40°C)
+  - **Always ON** = Critical! (above 40°C)
+
+**💧 Humidity Monitoring**
+- Tracks room humidity levels
+- NeoPixel changes color to show humidity:
+  - **Blue** = Too dry (below 40%)
+  - **Green** = Comfortable (40-60%)
+  - **Yellow** = Getting humid (60-80%)
+  - **Red** = Too wet (above 80%)
+
+**� Web Dashboard Access**
+- Connect your phone/laptop to WiFi: `ESP32-S3-LAB` (password: `12345678`)
+- Open browser to: `http://192.168.4.1`
+- See live temperature, humidity, and system status
+- Control 4-LED light bar with 5 different modes:
+  - OFF, BAR graph, Rainbow animation, SOS emergency, or Blinking
+
+**🚨 Fire Alert System**
+- Enable "Fire Alert Auto Mode" from the dashboard
+- Set your danger temperature (e.g., 45°C)
+- System **automatically** switches to SOS mode when temperature exceeds threshold
+- **Automatically** returns to normal when temperature is safe
+- Perfect for fire prevention or equipment overheating alerts
+
+**🔧 Remote Control**
+- Adjust temperature/humidity thresholds from anywhere
+- Control GPIO pins remotely
+- Switch between WiFi modes (Access Point or connect to your home WiFi)
+
+**🧠 Smart Anomaly Detection**
+- Built-in AI monitors sensor patterns
+- Detects unusual temperature/humidity combinations
+- Helps identify sensor failures or environmental issues
+
+**📊 16x2 LCD Display**
+- Shows current temperature and humidity
+- Displays classification bands (COLD/NORMAL/HOT/CRITICAL)
+- No phone needed - see status at a glance
+
+---
+
+## �📋 Table of Contents
+
+- [What Does This System Do?](#-what-does-this-system-do)
 - [Features](#-features)
 - [System Architecture](#-system-architecture)
 - [Hardware Requirements](#-hardware-requirements)
