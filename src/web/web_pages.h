@@ -651,8 +651,11 @@ async function poll(){
       if (fireAlertEnabled && !isNaN(j.tC)) {
         const threshold = parseFloat(document.getElementById('fireThreshold').value);
         if (j.tC >= threshold && j.uiMode !== 3) {
-          // Auto-switch to SOS mode
+          // Auto-switch to SOS mode when temperature exceeds threshold
           fetch('/ui/sos');
+        } else if (j.tC < threshold && j.uiMode === 3) {
+          // Auto-switch back to BAR mode when temperature is safe
+          fetch('/ui/bar');
         }
       }
     }

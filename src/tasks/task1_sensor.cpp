@@ -70,6 +70,12 @@ void task_read_dht20(void* pv) {
                 Serial.printf("[TASK1] ✓ Temp band changed: %s (%.1f°C) → semBandChanged given\n", 
                               bandName(nowT), t);
             }
+            
+            // AUTO-RESET SOS MODE: If temperature drops from CRITICAL and SOS mode is active
+            if (lastT == TempBand::CRITICAL && nowT != TempBand::CRITICAL && gLive.uiMode == 3) {
+                gLive.uiMode = 1;  // Switch back to BAR mode (safe visual indicator)
+                Serial.println("[TASK1] ✓ Temperature safe → Auto-resetting SOS mode to BAR mode");
+            }
         }
 
         // SEMAPHORE SIGNALING: Humidity band change (or first reading)
