@@ -843,11 +843,7 @@ MidtermProject_ESP32_PlatformIO/
 │   ├── Configuration/         # Configuration page screens
 │   └── Control/               # Control interface screens
 │
-├── MERMAID_DIAGRAMS.md        # 15 interactive Mermaid diagrams
-├── PROJECT_REPORT.tex         # Comprehensive LaTeX report (~30 pages)
-├── DIAGRAM_INTEGRATION_SUMMARY.md # Diagram usage guide
-├── REVISION_SUMMARY.md        # Report revision history
-├── LATEX_COMPILATION_GUIDE.md # LaTeX setup instructions
+├── README.md                  # Comprehnesive Instruction for the ProjectProject
 │
 ├── .gitignore                 # Git ignore rules
 ├── .pio/                      # PlatformIO build artifacts (ignored)
